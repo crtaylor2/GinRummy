@@ -17,6 +17,16 @@ private:
     std::vector<Card> player1cards;
     std::vector<Card> player2cards;
 
+    unsigned int player1score;
+    unsigned int player2score;
+
+    bool player1turn;
+
+    Card discard;
+
+    void DrawGame();
+    void UserInput(char input);
+
     std::string CardToString(const Card& card);
 };
 
