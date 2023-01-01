@@ -17,7 +17,7 @@ private:
     std::vector<Card> player1cards;
     std::vector<Card> player2cards;
 
-    std::string CardToString(const Card card);
+    std::string CardToString(const Card& card);
 };
 
 #endif // GINRUMMY_H

@@ -21,7 +21,7 @@ GinRummy::GinRummy()
     }
     std::cout << "deck has " << deck.size() << " cards" << std::endl;
 
-    //TODO: Shuffle the deck
+    //Shuffle the deck
     std::random_device rd;
     std::mt19937 g(rd());
     std::shuffle(deck.begin(), deck.end(), g);
@@ -31,12 +31,24 @@ GinRummy::GinRummy()
         std::cout << "card " << c << " is " << CardToString(deck.at(c)) << std::endl;
     }
 
-    //TODO: Deal each player 10 cards
+    //Deal each player 10 cards
+    for(int d = 0; d < 10; ++d)
+    {
+        player1cards.push_back(deck.back());
+        deck.pop_back();
+
+        player2cards.push_back(deck.back());
+        deck.pop_back();
+    }
+
+    std::cout << "size of player 1s hand is " << player1cards.size() << std::endl;
+    std::cout << "size of player 2s hand is " << player2cards.size() << std::endl;
+    std::cout << "size of deck is " << deck.size() << std::endl;
 
     //TODO: Turn over top card card place in the discard pile
 }
 
-std::string GinRummy::CardToString(const Card card)
+std::string GinRummy::CardToString(const Card& card)
 {
     std::string CardSuit;
     std::string CardValue;

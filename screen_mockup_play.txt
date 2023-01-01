@@ -1,0 +1,24 @@
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+YOU (x points) - your turn                                  COMPUTER (y points)
+
+Card 1                                                                  Card 1
+Card 2                            DISCARD PILE                          Card 2
+Card 3                             Card x of y                          Card 3  
+Card 4                                                                  Card 4
+Card 5                                                                  Card 5
+Card 6                         (F) - Take Face Down                     Card 6
+Card 7                          (D) - Take Discard                      Card 7
+Card 8                                                                  Card 8
+Card 9                                                                  Card 9    
+Card 10                                                                Card 10   
+Card 11
+
+(R) - Sort for Runs                                             (S) - Show Hand
+(P) - Sort for Pairs                                            (H) - Hide Hand
+
+(Dn) - Discard card #n
+(K) - Knock
+(G) - Gin
+(M) - Unmatched Meld Count
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
