@@ -24,6 +24,8 @@ private:
 
     Card discard;
 
+    static int LineLength;
+
     void DrawGame();
     void UserInput(char input);
 

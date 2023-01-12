@@ -3,6 +3,9 @@
 #include <iostream>
 #include <random>
 #include <algorithm>
+#include <sstream>
+
+int GinRummy::LineLength = 80;
 
 bool SortBySuit(Card card1, Card card2)
 {
@@ -143,15 +146,22 @@ std::string GinRummy::CardToString(const Card& card)
 
 void GinRummy::DrawGame()
 {
-    static const std::string border = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
+    static const std::string border(LineLength, 'x');
 
     std::cout << border << std::endl; //1
     std::cout << std::endl; //2
 
-    if(player1turn) //3
-        std::cout << "YOU (" << player1score << " points) - your turn" << " " << "COMPUTER (" << player2score << " points)" << std::endl;
-    else
-        std::cout << "YOU (" << player1score << " points)" << " " << "COMPUTER (" << player2score << " points) - your turn" << std::endl;
+    std::ostringstream LineLeft; //start to build line 3
+    LineLeft << "YOU (" << player1score << " points)";
+    if(player1turn)
+        LineLeft << " - your turn";
+    std::ostringstream LineRight;
+    if(!player1turn)
+        LineRight << "your turn - ";
+    LineRight << "(" << player2score << " points) COMPUTER";
+
+    int SpaceCount = LineLength - (LineLeft.str().length() + LineRight.str().length());
+    std::cout << LineLeft.str() << std::string(SpaceCount, ' ') << LineRight.str() << std::endl; //3
 
     std::cout << std::endl; //4
 

@@ -1,6 +1,6 @@
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
-YOU (x points) - your turn                                  COMPUTER (y points)
+YOU (x points) - your turn                                  (y points) COMPUTER
 
 Card 1                                                                  Card 1
 Card 2                            DISCARD PILE                          Card 2
