@@ -12,24 +12,27 @@ public:
     GinRummy();
 
 private:
-    std::vector<Card> deck;
+    std::vector<Card> Deck;
 
-    std::vector<Card> player1cards;
-    std::vector<Card> player2cards;
+    std::vector<Card> PlayersCards;
+    std::vector<Card> ComputerCards;
 
-    unsigned int player1score;
-    unsigned int player2score;
+    unsigned int PlayerScore;
+    unsigned int ComputerScore;
 
-    bool player1turn;
+    bool PlayerTurn;
+    bool ShowComputerHand;
 
-    Card discard;
+    Card Discard;
 
     static int LineLength;
 
     void DrawGame();
-    void UserInput(char input);
+    void UserInput(char Input);
 
-    std::string CardToString(const Card& card);
+    void PrintLine(const std::string& Left, const std::string& Right) const;
+
+    std::string CardToString(const Card& Card);
 };
 
 #endif // GINRUMMY_H

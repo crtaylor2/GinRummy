@@ -17,8 +17,8 @@ Card 11
 (R) - Sort for Runs                                             (S) - Show Hand
 (P) - Sort for Pairs                                            (H) - Hide Hand
 
-(Dn) - Discard card #n
-(K) - Knock
-(G) - Gin
-(M) - Unmatched Meld Count
+(Dn) - Discard card #n                                              (K) - Knock   
+(M) - Unmatched Meld Count                                            (G) - Gin
+(C) - Computer Play                                                  (Q) - Quit 
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Enter command: 
