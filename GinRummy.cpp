@@ -53,14 +53,14 @@ GinRummy::GinRummy()
     //Deal each player 10 cards
     for(int d = 0; d < 10; ++d)
     {
-        PlayersCards.push_back(Deck.back());
+        PlayerCards.push_back(Deck.back());
         Deck.pop_back();
 
         ComputerCards.push_back(Deck.back());
         Deck.pop_back();
     }
 
-    std::cout << "size of player 1s hand is " << PlayersCards.size() << std::endl;
+    std::cout << "size of player 1s hand is " << PlayerCards.size() << std::endl;
     std::cout << "size of player 2s hand is " << ComputerCards.size() << std::endl;
     std::cout << "size of Deck is " << Deck.size() << std::endl;
 
@@ -164,18 +164,27 @@ void GinRummy::DrawGame()
 
     std::cout << std::endl; //4
 
-    for(int idx = 0; idx < PlayersCards.size(); ++idx) //5-14, maybe 15
+    for(int idx = 0; idx < PlayerCards.size(); ++idx) //5-14, maybe 15
     {
-        std::string Left = CardToString(PlayersCards.at(idx));
+        std::string Left = CardToString(PlayerCards.at(idx));
         std::string Right;
+        std::string Middle;
         if(ShowComputerHand)
             Right = CardToString(ComputerCards.at(idx));
         else
             Right = "Card " + std::to_string(idx+1);
-        PrintLine(Left, Right);
+        if(idx == 1)
+            Middle = "DISCARD PILE";
+        else if(idx == 2)
+            Middle = CardToString(Discard);
+        else if(idx == 5)
+            Middle = "(F) - Take Face Down";
+        else if(idx == 6)
+            Middle = "(D) - Take Discard";
+        PrintLine(Left, Middle, Right);
     }
 
-    if(PlayersCards.size() == 10) //15
+    if(PlayerCards.size() == 10) //15
         std::cout << std::endl;
 
     std::cout << std::endl; //16
@@ -186,7 +195,7 @@ void GinRummy::DrawGame()
     PrintLine("(Dn) - Discard card #n", "(K) - Knock"); //20
     PrintLine("(M) - Unmatched Meld Count", "(G) - Gin"); //21
     PrintLine("(C) - Computer Play", "(Q) - Quit"); //22
-    std::cout << border; //23
+    std::cout << border << std::endl; //23
     std::cout << "Enter command: ";
 
     char Input;
@@ -198,12 +207,12 @@ void GinRummy::UserInput(char Input)
 {
     if(toupper(Input) == 'R')
     {
-        std::sort(PlayersCards.begin(), PlayersCards.end(), SortBySuit);
+        std::sort(PlayerCards.begin(), PlayerCards.end(), SortBySuit);
         std::sort(ComputerCards.begin(), ComputerCards.end(), SortBySuit);
     }
     else if(toupper(Input) == 'P')
     {
-        std::sort(PlayersCards.begin(), PlayersCards.end(), SortByValue);
+        std::sort(PlayerCards.begin(), PlayerCards.end(), SortByValue);
         std::sort(ComputerCards.begin(), ComputerCards.end(), SortByValue);
     }
     else if(toupper(Input) == 'S')
@@ -230,4 +239,14 @@ void GinRummy::PrintLine(const std::string& Left, const std::string& Right) cons
 {
     int SpaceCount = LineLength - (Left.length() + Right.length());
     std::cout << Left << std::string(SpaceCount, ' ') << Right << std::endl;
+}
+
+void GinRummy::PrintLine(const std::string& Left, const std::string& Middle, const std::string& Right) const
+{
+    int TotalSpaceCount = LineLength - (Left.length() + Middle.length() + Right.length());
+    int LeftSpaceCount = TotalSpaceCount / 2;
+    int RightSpaceCount = TotalSpaceCount / 2;
+    if(TotalSpaceCount % 2 != 0)
+        LeftSpaceCount = LeftSpaceCount + 1;
+    std::cout << Left << std::string(LeftSpaceCount, ' ') << Middle << std::string(RightSpaceCount, ' ') << Right << std::endl;
 }

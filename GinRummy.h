@@ -14,7 +14,7 @@ public:
 private:
     std::vector<Card> Deck;
 
-    std::vector<Card> PlayersCards;
+    std::vector<Card> PlayerCards;
     std::vector<Card> ComputerCards;
 
     unsigned int PlayerScore;
@@ -31,6 +31,7 @@ private:
     void UserInput(char Input);
 
     void PrintLine(const std::string& Left, const std::string& Right) const;
+    void PrintLine(const std::string& Left, const std::string& Middle, const std::string& Right) const;
 
     std::string CardToString(const Card& Card);
 };
