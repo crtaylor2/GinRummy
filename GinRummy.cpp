@@ -166,13 +166,13 @@ void GinRummy::DrawGame()
 
     for(int idx = 0; idx < PlayersCards.size(); ++idx) //5-14, maybe 15
     {
-        std::string left = CardToString(PlayersCards.at(idx));
-        std::string right;
+        std::string Left = CardToString(PlayersCards.at(idx));
+        std::string Right;
         if(ShowComputerHand)
-            right = CardToString(ComputerCards.at(idx));
+            Right = CardToString(ComputerCards.at(idx));
         else
-            right = "Card " + std::to_string(idx+1);
-        PrintLine(left, right);
+            Right = "Card " + std::to_string(idx+1);
+        PrintLine(Left, Right);
     }
 
     if(PlayersCards.size() == 10) //15
