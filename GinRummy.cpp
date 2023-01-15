@@ -196,7 +196,7 @@ void GinRummy::DrawGame()
     PrintLine("(M) - Unmatched Meld Count", "(G) - Gin"); //21
     PrintLine("(C) - Computer Play", "(Q) - Quit"); //22
     std::cout << border << std::endl; //23
-    std::cout << "Enter command: ";
+    std::cout << "Enter command: "; //24
 
     char Input;
     std::cin >> Input;
@@ -243,10 +243,25 @@ void GinRummy::PrintLine(const std::string& Left, const std::string& Right) cons
 
 void GinRummy::PrintLine(const std::string& Left, const std::string& Middle, const std::string& Right) const
 {
-    int TotalSpaceCount = LineLength - (Left.length() + Middle.length() + Right.length());
-    int LeftSpaceCount = TotalSpaceCount / 2;
-    int RightSpaceCount = TotalSpaceCount / 2;
-    if(TotalSpaceCount % 2 != 0)
-        LeftSpaceCount = LeftSpaceCount + 1;
+    static const int HalfLineLength = LineLength / 2;
+    int LeftSpaceCount = HalfLineLength - (Left.length() + (Middle.length() / 2));
+    int RightSpaceCount = HalfLineLength - (Right.length() + (Middle.length() / 2));
+
+    // Integer math will result in non-exact lengths so we add/subtract as needed to get to the
+    // required line length
+    int TotalLineLength = Left.length() + Middle.length() + Right.length() + LeftSpaceCount + RightSpaceCount;
+    if(TotalLineLength > LineLength)
+        --LeftSpaceCount;
+    else if(TotalLineLength < LineLength)
+        ++LeftSpaceCount;
+
+    // If LineLength isn't big enough to print the strings, the space counts can become negative and cause
+    // exceptions to be thrown in the std::string constructors below so we always print at least one space
+    if(LeftSpaceCount <= 0)
+        LeftSpaceCount = 1;
+
+    if(RightSpaceCount <= 0)
+        RightSpaceCount = 1;
+
     std::cout << Left << std::string(LeftSpaceCount, ' ') << Middle << std::string(RightSpaceCount, ' ') << Right << std::endl;
 }
