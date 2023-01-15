@@ -33,7 +33,12 @@ private:
     void PrintLine(const std::string& Left, const std::string& Right) const;
     void PrintLine(const std::string& Left, const std::string& Middle, const std::string& Right) const;
 
-    std::string CardToString(const Card& Card);
+    int CalculateUnmatchedMeld(std::vector<Card>& Hand) const;
+    int CountUnmatchedMeld(const std::vector<Card>& Hand) const;
+    void SearchForRuns(std::vector<Card>& Hand) const;
+    void SearchForPairs(std::vector<Card>& Hand) const;
+    void RemoveMeld(std::vector<Card>& Hand, std::vector<Card>& Meld) const;
+    void AddMeld(std::vector<Card>& Hand, std::vector<Card>& Meld) const;
 };
 
 #endif // GINRUMMY_H

@@ -34,7 +34,8 @@ GinRummy::GinRummy()
             Card card;
             card.suit = (Suit)s;
             card.value = (Value)n;
-            std::cout << "created " << CardToString(card) << std::endl;
+            card.isMeld = false;
+            std::cout << "created " << Card::CardToString(card) << std::endl;
             Deck.push_back(card);
         }
     }
@@ -47,7 +48,7 @@ GinRummy::GinRummy()
 
     for(int c = 0; c < Deck.size(); ++c)
     {
-        std::cout << "card " << c << " is " << CardToString(Deck.at(c)) << std::endl;
+        std::cout << "card " << c << " is " << Card::CardToString(Deck.at(c)) << std::endl;
     }
 
     //Deal each player 10 cards
@@ -78,73 +79,6 @@ GinRummy::GinRummy()
     DrawGame();
 }
 
-std::string GinRummy::CardToString(const Card& Card)
-{
-    std::string CardSuit;
-    std::string CardValue;
-
-    switch(Card.suit)
-    {
-        case DIAMOND:
-            CardSuit = "Diamonds";
-            break;
-        case CLUB:
-            CardSuit = "Clubs";
-            break;
-        case HEART:
-            CardSuit = "Hearts";
-            break;
-        case SPADE:
-            CardSuit = "Spades";
-            break;
-    }
-
-    switch(Card.value)
-    {
-        case ACE:
-            CardValue = "Ace";
-            break;
-        case TWO:
-            CardValue = "Two";
-            break;
-        case THREE:
-            CardValue = "Three";
-            break;
-        case FOUR:
-            CardValue = "Four";
-            break;
-        case FIVE:
-            CardValue = "Five";
-            break;
-        case SIX:
-            CardValue = "Six";
-            break;
-        case SEVEN:
-            CardValue = "Seven";
-            break;
-        case EIGHT:
-            CardValue = "Eight";
-            break;
-        case NINE:
-            CardValue = "Nine";
-            break;
-        case TEN:
-            CardValue = "Ten";
-            break;
-        case JACK:
-            CardValue = "Jack";
-            break;
-        case QUEEN:
-            CardValue = "Queen";
-            break;
-        case KING:
-            CardValue = "King";
-            break;
-    }
-
-    return CardValue + " of " + CardSuit;
-}
-
 void GinRummy::DrawGame()
 {
     static const std::string border(LineLength, 'x');
@@ -166,17 +100,17 @@ void GinRummy::DrawGame()
 
     for(int idx = 0; idx < PlayerCards.size(); ++idx) //5-14, maybe 15
     {
-        std::string Left = CardToString(PlayerCards.at(idx));
+        std::string Left = Card::CardToString(PlayerCards.at(idx));
         std::string Right;
         std::string Middle;
         if(ShowComputerHand)
-            Right = CardToString(ComputerCards.at(idx));
+            Right = Card::CardToString(ComputerCards.at(idx));
         else
             Right = "Card " + std::to_string(idx+1);
         if(idx == 1)
             Middle = "DISCARD PILE";
         else if(idx == 2)
-            Middle = CardToString(Discard);
+            Middle = Card::CardToString(Discard);
         else if(idx == 5)
             Middle = "(F) - Take Face Down";
         else if(idx == 6)
@@ -227,6 +161,11 @@ void GinRummy::UserInput(char Input)
     {
         exit(0);
     }
+    else if(toupper(Input) == 'M')
+    {
+        CalculateUnmatchedMeld(PlayerCards);
+        CalculateUnmatchedMeld(ComputerCards);
+    }
     else
     {
         std::cout << "Unexpected Input of " << Input << std::endl;
@@ -264,4 +203,99 @@ void GinRummy::PrintLine(const std::string& Left, const std::string& Middle, con
         RightSpaceCount = 1;
 
     std::cout << Left << std::string(LeftSpaceCount, ' ') << Middle << std::string(RightSpaceCount, ' ') << Right << std::endl;
+}
+
+int GinRummy::CalculateUnmatchedMeld(std::vector<Card> &Hand) const
+{
+    for(Card& card : Hand)
+        card.isMeld = false;
+
+    std::vector<Card> RunsThenPairs = Hand;
+    std::vector<Card> PairsThenRuns = Hand;
+    std::vector<Card> HoldMeld;
+    int RunsThenPairsCount;
+    int PairsThenRunsCount;
+
+    // Attempt 1 - runs then pairs
+    SearchForRuns(RunsThenPairs);
+    RemoveMeld(RunsThenPairs, HoldMeld);
+    SearchForPairs(RunsThenPairs);
+    AddMeld(RunsThenPairs, HoldMeld);
+    RunsThenPairsCount = CountUnmatchedMeld(RunsThenPairs);
+
+    // Attempt 2 - pairs thenn runs
+    SearchForPairs(PairsThenRuns);
+    RemoveMeld(PairsThenRuns, HoldMeld);
+    SearchForRuns(PairsThenRuns);
+    AddMeld(PairsThenRuns, HoldMeld);
+    PairsThenRunsCount = CountUnmatchedMeld(PairsThenRuns);
+
+    if(RunsThenPairsCount < PairsThenRunsCount)
+    {
+        Hand = RunsThenPairs;
+        return RunsThenPairsCount;
+    }
+    else
+    {
+        Hand = PairsThenRuns;
+        return PairsThenRunsCount;
+    }
+}
+
+int GinRummy::CountUnmatchedMeld(const std::vector<Card> &Hand) const
+{
+    int Count = 0;
+    for(const Card& card : Hand)
+        if(!card.isMeld)
+            Count = Count + Card::CardPoints(card);
+
+    return Count;
+}
+
+void GinRummy::SearchForRuns(std::vector<Card> &Hand) const
+{
+    std::sort(Hand.begin(), Hand.end(), SortBySuit);
+    for(int idx = 2; idx < Hand.size(); ++idx)
+    {
+        if((Hand.at(idx).suit == Hand.at(idx - 1).suit && Hand.at(idx - 1).suit == Hand.at(idx - 2).suit) &&
+           (Hand.at(idx).value == (Hand.at(idx - 1).value + 1) && (Hand.at(idx - 1).value + 1) == (Hand.at(idx - 2).value + 2)) )
+        {
+            Hand.at(idx).isMeld = true;
+            Hand.at(idx - 1).isMeld = true;
+            Hand.at(idx - 2).isMeld = true;
+        }
+    }
+}
+
+void GinRummy::SearchForPairs(std::vector<Card> &Hand) const
+{
+    std::sort(Hand.begin(), Hand.end(), SortByValue);
+    for(int idx = 2; idx < Hand.size(); ++idx)
+    {
+        if(Hand.at(idx).value == Hand.at(idx - 1).value && Hand.at(idx - 1).value == Hand.at(idx - 2).value)
+        {
+            Hand.at(idx).isMeld = true;
+            Hand.at(idx - 1).isMeld = true;
+            Hand.at(idx - 2).isMeld = true;
+        }
+    }
+}
+
+void GinRummy::RemoveMeld(std::vector<Card> &Hand, std::vector<Card> &Meld) const
+{
+    std::vector<Card> NonMeldHold;
+    for(Card& card : Hand)
+    {
+        if(card.isMeld)
+            Meld.push_back(card);
+        else
+            NonMeldHold.push_back(card);
+    }
+    Hand = NonMeldHold;
+}
+
+void GinRummy::AddMeld(std::vector<Card> &Hand, std::vector<Card> &Meld) const
+{
+    Hand.insert(Hand.end(), Meld.begin(), Meld.end());
+    Meld.clear();
 }

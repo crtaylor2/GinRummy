@@ -1,6 +1,8 @@
 #ifndef CARD_H
 #define CARD_H
 
+#include <string>
+
 enum Suit {
     DIAMOND,
     CLUB,
@@ -24,9 +26,15 @@ enum Value {
     KING
 };
 
-struct Card {
+class Card {
+
+public:
     Suit suit;
     Value value;
+    bool isMeld;
+
+    static std::string CardToString(const Card& Card);
+    static int CardPoints(Card card);
 };
 
 #endif // CARD_H

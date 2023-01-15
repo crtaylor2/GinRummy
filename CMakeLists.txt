@@ -20,6 +20,7 @@ add_executable(GinRummy
   main.cpp
   GinRummy.cpp
   GinRummy.h
+  Card.cpp
   Card.h
 )
 target_link_libraries(GinRummy Qt${QT_VERSION_MAJOR}::Core)
