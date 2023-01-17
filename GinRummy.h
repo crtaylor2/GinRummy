@@ -28,7 +28,7 @@ private:
     static int LineLength;
 
     void DrawGame();
-    void UserInput(char Input);
+    void UserInput(std::string Input);
 
     void PrintLine(const std::string& Left, const std::string& Right) const;
     void PrintLine(const std::string& Left, const std::string& Middle, const std::string& Right) const;

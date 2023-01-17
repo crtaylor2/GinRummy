@@ -100,11 +100,11 @@ void GinRummy::DrawGame()
 
     for(int idx = 0; idx < PlayerCards.size(); ++idx) //5-14, maybe 15
     {
-        std::string Left = Card::CardToString(PlayerCards.at(idx));
+        std::string Left = std::to_string(idx+1) + ". " + Card::CardToString(PlayerCards.at(idx));
         std::string Right;
         std::string Middle;
         if(ShowComputerHand)
-            Right = Card::CardToString(ComputerCards.at(idx));
+            Right = std::to_string(idx+1) + ". " + Card::CardToString(ComputerCards.at(idx));
         else
             Right = "Card " + std::to_string(idx+1);
         if(idx == 1)
@@ -116,6 +116,7 @@ void GinRummy::DrawGame()
         else if(idx == 6)
             Middle = "(D) - Take Discard";
         PrintLine(Left, Middle, Right);
+        // TODO: Computer and player cards may be different sizes.
     }
 
     if(PlayerCards.size() == 10) //15
@@ -132,39 +133,61 @@ void GinRummy::DrawGame()
     std::cout << border << std::endl; //23
     std::cout << "Enter command: "; //24
 
-    char Input;
+    std::string Input;
     std::cin >> Input;
     UserInput(Input);
 }
 
-void GinRummy::UserInput(char Input)
-{
-    if(toupper(Input) == 'R')
+void GinRummy::UserInput(std::string Input)
+{//TODO: Sorting should persist until changed.
+    if(Input == "R")
     {
         std::sort(PlayerCards.begin(), PlayerCards.end(), SortBySuit);
         std::sort(ComputerCards.begin(), ComputerCards.end(), SortBySuit);
     }
-    else if(toupper(Input) == 'P')
+    else if(Input == "P")
     {
         std::sort(PlayerCards.begin(), PlayerCards.end(), SortByValue);
         std::sort(ComputerCards.begin(), ComputerCards.end(), SortByValue);
     }
-    else if(toupper(Input) == 'S')
+    else if(Input == "S")
     {
         ShowComputerHand = true;
     }
-    else if(toupper(Input) == 'H')
+    else if(Input == "H")
     {
         ShowComputerHand = false;
     }
-    else if(toupper(Input) == 'Q')
+    else if(Input == "Q")
     {
         exit(0);
     }
-    else if(toupper(Input) == 'M')
+    else if(Input == "M")
     {
         CalculateUnmatchedMeld(PlayerCards);
         CalculateUnmatchedMeld(ComputerCards);
+    }
+    else if(Input == "D")
+    {
+        PlayerCards.push_back(Discard);
+        Discard = Card();
+        // TODO: Discard should be a vector. The above line will result in the "?" being placed on the discard.
+    }
+    else if(Input == "F")
+    {
+        PlayerCards.push_back(Deck.back());
+        Deck.pop_back();
+    }
+    else if(!Input.empty() && Input.at(0) == 'D')
+    {
+        int idx = std::stoi(Input.substr(1)) - 1;
+        if(idx >= 0 && idx < PlayerCards.size())
+        {
+            Discard = PlayerCards.at(idx);
+            PlayerCards.at(idx) = PlayerCards.back();
+            PlayerCards.pop_back();
+            PlayerTurn = false;
+        }
     }
     else
     {
