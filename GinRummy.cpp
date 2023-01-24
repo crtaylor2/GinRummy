@@ -66,7 +66,7 @@ GinRummy::GinRummy()
     std::cout << "size of Deck is " << Deck.size() << std::endl;
 
     //Turn over top card card place in the Discard pile
-    Discard = Deck.back();
+    Discard.push_back(Deck.back());
     Deck.pop_back();
 
     //Initialize variables
@@ -110,7 +110,7 @@ void GinRummy::DrawGame()
         if(idx == 1)
             Middle = "DISCARD PILE";
         else if(idx == 2)
-            Middle = Card::CardToString(Discard);
+            Middle = !Discard.empty() ? Card::CardToString(Discard.back()) : "";
         else if(idx == 5)
             Middle = "(F) - Take Face Down";
         else if(idx == 6)
@@ -169,9 +169,8 @@ void GinRummy::UserInput(std::string Input)
     }
     else if(Input == "D")
     {
-        PlayerCards.push_back(Discard);
-        Discard = Card();
-        // TODO: Discard should be a vector. The above line will result in the "?" being placed on the discard.
+        PlayerCards.push_back(Discard.back());
+        Discard.pop_back();
     }
     else if(Input == "F")
     {
@@ -183,7 +182,7 @@ void GinRummy::UserInput(std::string Input)
         int idx = std::stoi(Input.substr(1)) - 1;
         if(idx >= 0 && idx < PlayerCards.size())
         {
-            Discard = PlayerCards.at(idx);
+            Discard.push_back(PlayerCards.at(idx));
             PlayerCards.at(idx) = PlayerCards.back();
             PlayerCards.pop_back();
             PlayerTurn = false;

@@ -23,7 +23,7 @@ private:
     bool PlayerTurn;
     bool ShowComputerHand;
 
-    Card Discard;
+    std::vector<Card> Discard;
 
     static int LineLength;
 
