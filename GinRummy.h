@@ -22,6 +22,7 @@ private:
 
     bool PlayerTurn;
     bool ShowComputerHand;
+    bool SortByRuns;
 
     std::vector<Card> Discard;
 

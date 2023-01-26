@@ -75,6 +75,7 @@ GinRummy::GinRummy()
 
     PlayerTurn = true;
     ShowComputerHand = false;
+    SortByRuns = true;
 
     DrawGame();
 }
@@ -98,15 +99,29 @@ void GinRummy::DrawGame()
 
     std::cout << std::endl; //4
 
+    if(SortByRuns)
+    {
+        std::sort(PlayerCards.begin(), PlayerCards.end(), SortBySuit);
+        std::sort(ComputerCards.begin(), ComputerCards.end(), SortBySuit);
+    }
+    else
+    {
+        std::sort(PlayerCards.begin(), PlayerCards.end(), SortByValue);
+        std::sort(ComputerCards.begin(), ComputerCards.end(), SortByValue);
+    }
+
     for(int idx = 0; idx < PlayerCards.size(); ++idx) //5-14, maybe 15
     {
         std::string Left = std::to_string(idx+1) + ". " + Card::CardToString(PlayerCards.at(idx));
         std::string Right;
         std::string Middle;
-        if(ShowComputerHand)
-            Right = std::to_string(idx+1) + ". " + Card::CardToString(ComputerCards.at(idx));
-        else
-            Right = "Card " + std::to_string(idx+1);
+        if(idx < ComputerCards.size())
+        {
+            if(ShowComputerHand)
+                Right = std::to_string(idx+1) + ". " + Card::CardToString(ComputerCards.at(idx));
+            else
+                Right = "Card " + std::to_string(idx+1);
+        }
         if(idx == 1)
             Middle = "DISCARD PILE";
         else if(idx == 2)
@@ -116,7 +131,6 @@ void GinRummy::DrawGame()
         else if(idx == 6)
             Middle = "(D) - Take Discard";
         PrintLine(Left, Middle, Right);
-        // TODO: Computer and player cards may be different sizes.
     }
 
     if(PlayerCards.size() == 10) //15
@@ -139,16 +153,14 @@ void GinRummy::DrawGame()
 }
 
 void GinRummy::UserInput(std::string Input)
-{//TODO: Sorting should persist until changed.
+{
     if(Input == "R")
     {
-        std::sort(PlayerCards.begin(), PlayerCards.end(), SortBySuit);
-        std::sort(ComputerCards.begin(), ComputerCards.end(), SortBySuit);
+        SortByRuns = true;
     }
     else if(Input == "P")
     {
-        std::sort(PlayerCards.begin(), PlayerCards.end(), SortByValue);
-        std::sort(ComputerCards.begin(), ComputerCards.end(), SortByValue);
+        SortByRuns = false;
     }
     else if(Input == "S")
     {
@@ -169,25 +181,41 @@ void GinRummy::UserInput(std::string Input)
     }
     else if(Input == "D")
     {
-        PlayerCards.push_back(Discard.back());
-        Discard.pop_back();
+        if(PlayerTurn && PlayerCards.size() < 11 && !Discard.empty())
+        {
+            PlayerCards.push_back(Discard.back());
+            Discard.pop_back();
+        }
     }
     else if(Input == "F")
     {
-        PlayerCards.push_back(Deck.back());
-        Deck.pop_back();
+        if(PlayerTurn && PlayerCards.size() < 11 && !Deck.empty())
+        {
+            PlayerCards.push_back(Deck.back());
+            Deck.pop_back();
+        }
     }
     else if(!Input.empty() && Input.at(0) == 'D')
     {
-        int idx = std::stoi(Input.substr(1)) - 1;
-        if(idx >= 0 && idx < PlayerCards.size())
+        if(PlayerTurn && PlayerCards.size() > 10)
         {
-            Discard.push_back(PlayerCards.at(idx));
-            PlayerCards.at(idx) = PlayerCards.back();
-            PlayerCards.pop_back();
-            PlayerTurn = false;
+            int idx = std::stoi(Input.substr(1)) - 1;
+            if(idx >= 0 && idx < PlayerCards.size())
+            {
+                Discard.push_back(PlayerCards.at(idx));
+                PlayerCards.at(idx) = PlayerCards.back();
+                PlayerCards.pop_back();
+                PlayerTurn = false;
+            }
         }
     }
+    // add else if for C
+    // check to see if computer's turn
+    // will picking up the discard reduce the unmatched meld in the computers hand?
+    // if yes, pick it up
+    // if no, pick up the face down card
+    // discard the highest (or maybe random) unmatched card
+    // set turn to the player
     else
     {
         std::cout << "Unexpected Input of " << Input << std::endl;
