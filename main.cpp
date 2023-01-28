@@ -1,7 +1,8 @@
 #include "GinRummy.h"
 
-int main(int argc, char *argv[])
+int main()
 {
     GinRummy gr;
-    return 1;
+    gr.Play();
+    return 0;
 }

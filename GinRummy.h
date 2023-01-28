@@ -11,6 +11,8 @@ class GinRummy
 public:
     GinRummy();
 
+    void Play();
+
 private:
     std::vector<Card> Deck;
 
@@ -29,7 +31,6 @@ private:
     static int LineLength;
 
     void DrawGame();
-    void Play();
     void UserInput();
 
     void PrintLine(const std::string& Left, const std::string& Right) const;
