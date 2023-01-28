@@ -85,13 +85,13 @@ void GinRummy::DrawGame()
 
     if(SortByRuns)
     {
-        std::sort(PlayerCards.begin(), PlayerCards.end(), Card::SortForRuns);
-        std::sort(ComputerCards.begin(), ComputerCards.end(), Card::SortForRuns);
+        std::sort(PlayerCards.begin(), PlayerCards.end(), Card::CompareForRuns);
+        std::sort(ComputerCards.begin(), ComputerCards.end(), Card::CompareForRuns);
     }
     else
     {
-        std::sort(PlayerCards.begin(), PlayerCards.end(), Card::SortForSets);
-        std::sort(ComputerCards.begin(), ComputerCards.end(), Card::SortForSets);
+        std::sort(PlayerCards.begin(), PlayerCards.end(), Card::CompareForSets);
+        std::sort(ComputerCards.begin(), ComputerCards.end(), Card::CompareForSets);
     }
 
     for(int idx = 0; idx < PlayerCards.size(); ++idx) //5-14, maybe 15
@@ -288,7 +288,7 @@ int GinRummy::CountUnmatchedMeld(const std::vector<Card> &Hand) const
 
 void GinRummy::SearchForRuns(std::vector<Card> &Hand) const
 {
-    std::sort(Hand.begin(), Hand.end(), Card::SortForRuns);
+    std::sort(Hand.begin(), Hand.end(), Card::CompareForRuns);
     for(int idx = 2; idx < Hand.size(); ++idx)
     {
         if((Hand.at(idx).suit == Hand.at(idx - 1).suit && Hand.at(idx - 1).suit == Hand.at(idx - 2).suit) &&
@@ -303,7 +303,7 @@ void GinRummy::SearchForRuns(std::vector<Card> &Hand) const
 
 void GinRummy::SearchForSets(std::vector<Card> &Hand) const
 {
-    std::sort(Hand.begin(), Hand.end(), Card::SortForSets);
+    std::sort(Hand.begin(), Hand.end(), Card::CompareForSets);
     for(int idx = 2; idx < Hand.size(); ++idx)
     {
         if(Hand.at(idx).value == Hand.at(idx - 1).value && Hand.at(idx - 1).value == Hand.at(idx - 2).value)

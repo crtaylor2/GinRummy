@@ -1,74 +1,78 @@
 #include "Card.h"
 
+#include <algorithm>
+
 std::string Card::CardToString(const Card& Card)
 {
-    std::string CardSuit;
-    std::string CardValue;
-    std::string CardMeld;
-
-    switch(Card.suit)
-    {
-        case DIAMOND:
-            CardSuit = "Diamonds";
-            break;
-        case CLUB:
-            CardSuit = "Clubs";
-            break;
-        case HEART:
-            CardSuit = "Hearts";
-            break;
-        case SPADE:
-            CardSuit = "Spades";
-            break;
-    }
+    std::string CardString;
 
     switch(Card.value)
     {
         case ACE:
-            CardValue = "Ace";
+            CardString = "Ace";
             break;
         case TWO:
-            CardValue = "Two";
+            CardString = "Two";
             break;
         case THREE:
-            CardValue = "Three";
+            CardString = "Three";
             break;
         case FOUR:
-            CardValue = "Four";
+            CardString = "Four";
             break;
         case FIVE:
-            CardValue = "Five";
+            CardString = "Five";
             break;
         case SIX:
-            CardValue = "Six";
+            CardString = "Six";
             break;
         case SEVEN:
-            CardValue = "Seven";
+            CardString = "Seven";
             break;
         case EIGHT:
-            CardValue = "Eight";
+            CardString = "Eight";
             break;
         case NINE:
-            CardValue = "Nine";
+            CardString = "Nine";
             break;
         case TEN:
-            CardValue = "Ten";
+            CardString = "Ten";
             break;
         case JACK:
-            CardValue = "Jack";
+            CardString = "Jack";
             break;
         case QUEEN:
-            CardValue = "Queen";
+            CardString = "Queen";
             break;
         case KING:
-            CardValue = "King";
+            CardString = "King";
+            break;
+    }
+
+    CardString += " of ";
+
+    switch(Card.suit)
+    {
+        case DIAMOND:
+            CardString += "Diamonds";
+            break;
+        case CLUB:
+            CardString += "Clubs";
+            break;
+        case HEART:
+            CardString += "Hearts";
+            break;
+        case SPADE:
+            CardString += "Spades";
             break;
     }
 
     if(Card.isMeld)
-        CardMeld = "#";
+    {
+        std::transform(CardString.begin(), CardString.end(), CardString.begin(), ::toupper);
+    }
 
-    return CardValue + " of " + CardSuit + CardMeld;
+    return CardString;
 }
 
 int Card::CardPoints(Card card)
@@ -103,7 +107,7 @@ int Card::CardPoints(Card card)
     return 0;
 }
 
-bool Card::SortForRuns(Card Card1, Card Card2)
+bool Card::CompareForRuns(Card Card1, Card Card2)
 {
     if(Card1.suit != Card2.suit)
         return Card1.suit < Card2.suit;
@@ -111,7 +115,7 @@ bool Card::SortForRuns(Card Card1, Card Card2)
         return Card1.value < Card2.value;
 }
 
-bool Card::SortForSets(Card Card1, Card Card2)
+bool Card::CompareForSets(Card Card1, Card Card2)
 {
     if(Card1.value != Card2.value)
         return Card1.value < Card2.value;

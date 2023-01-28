@@ -36,8 +36,8 @@ public:
     static std::string CardToString(const Card& Card);
     static int CardPoints(Card card);
 
-    static bool SortForSets(Card Card1, Card Card2);
-    static bool SortForRuns(Card Card1, Card Card2);
+    static bool CompareForSets(Card Card1, Card Card2);
+    static bool CompareForRuns(Card Card1, Card Card2);
 };
 
 #endif // CARD_H
