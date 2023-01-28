@@ -102,3 +102,19 @@ int Card::CardPoints(Card card)
 
     return 0;
 }
+
+bool Card::SortForRuns(Card Card1, Card Card2)
+{
+    if(Card1.suit != Card2.suit)
+        return Card1.suit < Card2.suit;
+    else
+        return Card1.value < Card2.value;
+}
+
+bool Card::SortForSets(Card Card1, Card Card2)
+{
+    if(Card1.value != Card2.value)
+        return Card1.value < Card2.value;
+    else
+        return Card1.suit < Card2.suit;
+}

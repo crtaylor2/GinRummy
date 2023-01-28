@@ -7,22 +7,6 @@
 
 int GinRummy::LineLength = 80;
 
-bool SortBySuit(Card Card1, Card Card2)
-{
-    if(Card1.suit != Card2.suit)
-        return Card1.suit < Card2.suit;
-    else
-        return Card1.value < Card2.value;
-}
-
-bool SortByValue(Card Card1, Card Card2)
-{
-    if(Card1.value != Card2.value)
-        return Card1.value < Card2.value;
-    else
-        return Card1.suit < Card2.suit;
-}
-
 GinRummy::GinRummy()
 {
     std::cout << "Deck has " << Deck.size() << " cards" << std::endl;
@@ -101,13 +85,13 @@ void GinRummy::DrawGame()
 
     if(SortByRuns)
     {
-        std::sort(PlayerCards.begin(), PlayerCards.end(), SortBySuit);
-        std::sort(ComputerCards.begin(), ComputerCards.end(), SortBySuit);
+        std::sort(PlayerCards.begin(), PlayerCards.end(), Card::SortForRuns);
+        std::sort(ComputerCards.begin(), ComputerCards.end(), Card::SortForRuns);
     }
     else
     {
-        std::sort(PlayerCards.begin(), PlayerCards.end(), SortByValue);
-        std::sort(ComputerCards.begin(), ComputerCards.end(), SortByValue);
+        std::sort(PlayerCards.begin(), PlayerCards.end(), Card::SortForSets);
+        std::sort(ComputerCards.begin(), ComputerCards.end(), Card::SortForSets);
     }
 
     for(int idx = 0; idx < PlayerCards.size(); ++idx) //5-14, maybe 15
@@ -139,7 +123,7 @@ void GinRummy::DrawGame()
     std::cout << std::endl; //16
 
     PrintLine("(R) - Sort for Runs", "(S) - Show Hand"); //17
-    PrintLine("(P) - Sort for Pairs", "(H) - Hide Hand"); //18
+    PrintLine("(P) - Sort for Sets", "(H) - Hide Hand"); //18
     std::cout << std::endl; //19
     PrintLine("(Dn) - Discard card #n", "(K) - Knock"); //20
     PrintLine("(M) - Unmatched Meld Count", "(G) - Gin"); //21
@@ -260,35 +244,35 @@ int GinRummy::CalculateUnmatchedMeld(std::vector<Card> &Hand) const
     for(Card& card : Hand)
         card.isMeld = false;
 
-    std::vector<Card> RunsThenPairs = Hand;
-    std::vector<Card> PairsThenRuns = Hand;
+    std::vector<Card> RunsThenSets = Hand;
+    std::vector<Card> SetsThenRuns = Hand;
     std::vector<Card> HoldMeld;
-    int RunsThenPairsCount;
-    int PairsThenRunsCount;
+    int RunsThenSetsCount;
+    int SetsThenRunsCount;
 
-    // Attempt 1 - runs then pairs
-    SearchForRuns(RunsThenPairs);
-    RemoveMeld(RunsThenPairs, HoldMeld);
-    SearchForPairs(RunsThenPairs);
-    AddMeld(RunsThenPairs, HoldMeld);
-    RunsThenPairsCount = CountUnmatchedMeld(RunsThenPairs);
+    // Attempt 1 - runs then sets
+    SearchForRuns(RunsThenSets);
+    RemoveMeld(RunsThenSets, HoldMeld);
+    SearchForSets(RunsThenSets);
+    AddMeld(RunsThenSets, HoldMeld);
+    RunsThenSetsCount = CountUnmatchedMeld(RunsThenSets);
 
-    // Attempt 2 - pairs thenn runs
-    SearchForPairs(PairsThenRuns);
-    RemoveMeld(PairsThenRuns, HoldMeld);
-    SearchForRuns(PairsThenRuns);
-    AddMeld(PairsThenRuns, HoldMeld);
-    PairsThenRunsCount = CountUnmatchedMeld(PairsThenRuns);
+    // Attempt 2 - sets thenn runs
+    SearchForSets(SetsThenRuns);
+    RemoveMeld(SetsThenRuns, HoldMeld);
+    SearchForRuns(SetsThenRuns);
+    AddMeld(SetsThenRuns, HoldMeld);
+    SetsThenRunsCount = CountUnmatchedMeld(SetsThenRuns);
 
-    if(RunsThenPairsCount < PairsThenRunsCount)
+    if(RunsThenSetsCount < SetsThenRunsCount)
     {
-        Hand = RunsThenPairs;
-        return RunsThenPairsCount;
+        Hand = RunsThenSets;
+        return RunsThenSetsCount;
     }
     else
     {
-        Hand = PairsThenRuns;
-        return PairsThenRunsCount;
+        Hand = SetsThenRuns;
+        return SetsThenRunsCount;
     }
 }
 
@@ -304,7 +288,7 @@ int GinRummy::CountUnmatchedMeld(const std::vector<Card> &Hand) const
 
 void GinRummy::SearchForRuns(std::vector<Card> &Hand) const
 {
-    std::sort(Hand.begin(), Hand.end(), SortBySuit);
+    std::sort(Hand.begin(), Hand.end(), Card::SortForRuns);
     for(int idx = 2; idx < Hand.size(); ++idx)
     {
         if((Hand.at(idx).suit == Hand.at(idx - 1).suit && Hand.at(idx - 1).suit == Hand.at(idx - 2).suit) &&
@@ -317,9 +301,9 @@ void GinRummy::SearchForRuns(std::vector<Card> &Hand) const
     }
 }
 
-void GinRummy::SearchForPairs(std::vector<Card> &Hand) const
+void GinRummy::SearchForSets(std::vector<Card> &Hand) const
 {
-    std::sort(Hand.begin(), Hand.end(), SortByValue);
+    std::sort(Hand.begin(), Hand.end(), Card::SortForSets);
     for(int idx = 2; idx < Hand.size(); ++idx)
     {
         if(Hand.at(idx).value == Hand.at(idx - 1).value && Hand.at(idx - 1).value == Hand.at(idx - 2).value)

@@ -37,7 +37,7 @@ private:
     int CalculateUnmatchedMeld(std::vector<Card>& Hand) const;
     int CountUnmatchedMeld(const std::vector<Card>& Hand) const;
     void SearchForRuns(std::vector<Card>& Hand) const;
-    void SearchForPairs(std::vector<Card>& Hand) const;
+    void SearchForSets(std::vector<Card>& Hand) const;
     void RemoveMeld(std::vector<Card>& Hand, std::vector<Card>& Meld) const;
     void AddMeld(std::vector<Card>& Hand, std::vector<Card>& Meld) const;
 };
