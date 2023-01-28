@@ -9,7 +9,6 @@ int GinRummy::LineLength = 80;
 
 GinRummy::GinRummy()
 {
-    std::cout << "Deck has " << Deck.size() << " cards" << std::endl;
     //Create 52 cards and place them in the Deck
     for(int s = DIAMOND; s <= SPADE; ++s)
     {
@@ -19,21 +18,14 @@ GinRummy::GinRummy()
             card.suit = (Suit)s;
             card.value = (Value)n;
             card.isMeld = false;
-            std::cout << "created " << Card::CardToString(card) << std::endl;
             Deck.push_back(card);
         }
     }
-    std::cout << "Deck has " << Deck.size() << " cards" << std::endl;
 
     //Shuffle the Deck
     std::random_device rd;
     std::mt19937 g(rd());
     std::shuffle(Deck.begin(), Deck.end(), g);
-
-    for(int c = 0; c < Deck.size(); ++c)
-    {
-        std::cout << "card " << c << " is " << Card::CardToString(Deck.at(c)) << std::endl;
-    }
 
     //Deal each player 10 cards
     for(int d = 0; d < 10; ++d)
@@ -44,10 +36,6 @@ GinRummy::GinRummy()
         ComputerCards.push_back(Deck.back());
         Deck.pop_back();
     }
-
-    std::cout << "size of player 1s hand is " << PlayerCards.size() << std::endl;
-    std::cout << "size of player 2s hand is " << ComputerCards.size() << std::endl;
-    std::cout << "size of Deck is " << Deck.size() << std::endl;
 
     //Turn over top card card place in the Discard pile
     Discard.push_back(Deck.back());
@@ -61,9 +49,29 @@ GinRummy::GinRummy()
     ShowComputerHand = false;
     SortByRuns = true;
 
-    DrawGame();
+    Play();
 }
 
+//////////////////////////////////////////////////////////////////////
+/// Repeatedly makes calls to draw the game and to request user input
+/// until the user elects to quit the game
+///
+/// Returns: void
+//////////////////////////////////////////////////////////////////////
+void GinRummy::Play()
+{
+    while(true)
+    {
+        DrawGame();
+        UserInput();
+    }
+}
+
+//////////////////////////////////////////////////////////////////////
+/// Prints the current state of the game
+///
+/// Returns: void
+//////////////////////////////////////////////////////////////////////
 void GinRummy::DrawGame()
 {
     static const std::string border(LineLength, 'x');
@@ -130,14 +138,18 @@ void GinRummy::DrawGame()
     PrintLine("(C) - Computer Play", "(Q) - Quit"); //22
     std::cout << border << std::endl; //23
     std::cout << "Enter command: "; //24
-
-    std::string Input;
-    std::cin >> Input;
-    UserInput(Input);
 }
 
-void GinRummy::UserInput(std::string Input)
+//////////////////////////////////////////////////////////////////////
+/// Accepts input from the user and responds accordingly
+///
+/// Returns: void
+//////////////////////////////////////////////////////////////////////
+void GinRummy::UserInput()
 {
+    std::string Input;
+    std::cin >> Input;
+
     if(Input == "R")
     {
         SortByRuns = true;
@@ -160,8 +172,8 @@ void GinRummy::UserInput(std::string Input)
     }
     else if(Input == "M")
     {
-        CalculateUnmatchedMeld(PlayerCards);
-        CalculateUnmatchedMeld(ComputerCards);
+        FindUnmatchedMeld(PlayerCards);
+        FindUnmatchedMeld(ComputerCards);
     }
     else if(Input == "D")
     {
@@ -193,27 +205,33 @@ void GinRummy::UserInput(std::string Input)
             }
         }
     }
-    // add else if for C
-    // check to see if computer's turn
-    // will picking up the discard reduce the unmatched meld in the computers hand?
-    // if yes, pick it up
-    // if no, pick up the face down card
-    // discard the highest (or maybe random) unmatched card
-    // set turn to the player
     else
     {
         std::cout << "Unexpected Input of " << Input << std::endl;
     }
-
-    DrawGame();
 }
 
+//////////////////////////////////////////////////////////////////////
+/// Prints a console line of text with two strings. The total length
+/// of the line will be LineLength long with the first parameter being
+/// left aligned and the second parameter being right aligned
+///
+/// Returns: void
+//////////////////////////////////////////////////////////////////////
 void GinRummy::PrintLine(const std::string& Left, const std::string& Right) const
 {
     int SpaceCount = LineLength - (Left.length() + Right.length());
     std::cout << Left << std::string(SpaceCount, ' ') << Right << std::endl;
 }
 
+//////////////////////////////////////////////////////////////////////
+/// Prints a console line of text with three strings. The total length
+/// of the line will be LineLength long with the first parameter being
+/// left aligned, second parameter being center aligned, and the third
+/// parameter being right aligned
+///
+/// Returns: void
+//////////////////////////////////////////////////////////////////////
 void GinRummy::PrintLine(const std::string& Left, const std::string& Middle, const std::string& Right) const
 {
     static const int HalfLineLength = LineLength / 2;
@@ -239,7 +257,14 @@ void GinRummy::PrintLine(const std::string& Left, const std::string& Middle, con
     std::cout << Left << std::string(LeftSpaceCount, ' ') << Middle << std::string(RightSpaceCount, ' ') << Right << std::endl;
 }
 
-int GinRummy::CalculateUnmatchedMeld(std::vector<Card> &Hand) const
+//////////////////////////////////////////////////////////////////////
+/// Reviews a Hand for the optimal method of determining which cards
+/// are (and are not) meld. The function will reset the isMeld member
+/// on the Card class.
+///
+/// Returns: int (the sum of the unmelded card's values in the Hand)
+//////////////////////////////////////////////////////////////////////
+int GinRummy::FindUnmatchedMeld(std::vector<Card> &Hand) const
 {
     for(Card& card : Hand)
         card.isMeld = false;
@@ -255,14 +280,14 @@ int GinRummy::CalculateUnmatchedMeld(std::vector<Card> &Hand) const
     RemoveMeld(RunsThenSets, HoldMeld);
     SearchForSets(RunsThenSets);
     AddMeld(RunsThenSets, HoldMeld);
-    RunsThenSetsCount = CountUnmatchedMeld(RunsThenSets);
+    RunsThenSetsCount = SumUnmatchedMeld(RunsThenSets);
 
     // Attempt 2 - sets thenn runs
     SearchForSets(SetsThenRuns);
     RemoveMeld(SetsThenRuns, HoldMeld);
     SearchForRuns(SetsThenRuns);
     AddMeld(SetsThenRuns, HoldMeld);
-    SetsThenRunsCount = CountUnmatchedMeld(SetsThenRuns);
+    SetsThenRunsCount = SumUnmatchedMeld(SetsThenRuns);
 
     if(RunsThenSetsCount < SetsThenRunsCount)
     {
@@ -276,7 +301,14 @@ int GinRummy::CalculateUnmatchedMeld(std::vector<Card> &Hand) const
     }
 }
 
-int GinRummy::CountUnmatchedMeld(const std::vector<Card> &Hand) const
+//////////////////////////////////////////////////////////////////////
+/// Loops through a Hand of cards and keeps a running total of the
+/// unmelded cards. This function relies upon the isMeld member of the
+/// Cards being set correctly and will NOT try to find any meld combos
+///
+/// Returns: int (the sum of the unmelded card's values in the Hand)
+//////////////////////////////////////////////////////////////////////
+int GinRummy::SumUnmatchedMeld(const std::vector<Card> &Hand) const
 {
     int Count = 0;
     for(const Card& card : Hand)
@@ -286,6 +318,12 @@ int GinRummy::CountUnmatchedMeld(const std::vector<Card> &Hand) const
     return Count;
 }
 
+//////////////////////////////////////////////////////////////////////
+/// Loops through a Hand of cards and identifies runs of three or more
+/// cards of the same suit.
+///
+/// Returns: void
+//////////////////////////////////////////////////////////////////////
 void GinRummy::SearchForRuns(std::vector<Card> &Hand) const
 {
     std::sort(Hand.begin(), Hand.end(), Card::CompareForRuns);
@@ -301,6 +339,12 @@ void GinRummy::SearchForRuns(std::vector<Card> &Hand) const
     }
 }
 
+//////////////////////////////////////////////////////////////////////
+/// Loops through a Hand of cards and identifies sets of three or more
+/// cards with the same value
+///
+/// Returns: void
+//////////////////////////////////////////////////////////////////////
 void GinRummy::SearchForSets(std::vector<Card> &Hand) const
 {
     std::sort(Hand.begin(), Hand.end(), Card::CompareForSets);
@@ -315,6 +359,12 @@ void GinRummy::SearchForSets(std::vector<Card> &Hand) const
     }
 }
 
+//////////////////////////////////////////////////////////////////////
+/// Loops through a Hand of cards and removes all of the melded cards
+/// from that hand (and places them in Meld).
+///
+/// Returns: void
+//////////////////////////////////////////////////////////////////////
 void GinRummy::RemoveMeld(std::vector<Card> &Hand, std::vector<Card> &Meld) const
 {
     std::vector<Card> NonMeldHold;
@@ -328,8 +378,76 @@ void GinRummy::RemoveMeld(std::vector<Card> &Hand, std::vector<Card> &Meld) cons
     Hand = NonMeldHold;
 }
 
+//////////////////////////////////////////////////////////////////////
+/// Adds the cards in the Meld vector into the Hand vector
+///
+/// Returns: void
+//////////////////////////////////////////////////////////////////////
 void GinRummy::AddMeld(std::vector<Card> &Hand, std::vector<Card> &Meld) const
 {
     Hand.insert(Hand.end(), Meld.begin(), Meld.end());
     Meld.clear();
+}
+
+//////////////////////////////////////////////////////////////////////
+/// Should the user pickup the discarded card? The goal of the function
+/// is to make the decision based upon whether or not the discarded
+/// card will improve the user's probability of gin.
+///
+/// Returns: bool (true is pickup discard, false is pickup face down)
+//////////////////////////////////////////////////////////////////////
+bool GinRummy::PickupDiscard(const std::vector<Card>& Hand) const
+{
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> distrib(0, 1);
+    return distrib(gen);
+}
+
+//////////////////////////////////////////////////////////////////////
+/// Which card should the user discard? The goal of the function is to
+/// discard the card that is least like to be melded, with ties broken
+/// against the card's value and randomly, if needed.
+///
+/// Returns: int (index of the vector of the card to discard)
+//////////////////////////////////////////////////////////////////////
+int GinRummy::IndexToDiscard(const std::vector<Card>& Hand) const
+{
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> distrib(0, Hand.size() - 1);
+    return distrib(gen);
+}
+
+//////////////////////////////////////////////////////////////////////
+/// Should the user knock or play on to gin? The goal of the function
+/// is to make this decision randomly with a bias toward being more
+/// likely to making this decision with a lower meld count. Knocking
+/// can only be done if the unmatched meld in the hand is 10 or less.
+///
+/// Returns: void
+//////////////////////////////////////////////////////////////////////
+bool GinRummy::Knock(const std::vector<Card>& Hand) const
+{
+    return false;
+}
+
+//////////////////////////////////////////////////////////////////////
+/// Computes the probability of gin for the Hand
+///
+/// Returns: double (probability of gin)
+//////////////////////////////////////////////////////////////////////
+double GinRummy::ProbabilityOfGin(const std::vector<Card>& Hand) const
+{
+    return 0.5;
+}
+
+//////////////////////////////////////////////////////////////////////
+/// Computes the probability of meld for each card in the hand (and
+/// sets the value accordingly in the vector)
+///
+/// Returns: void
+//////////////////////////////////////////////////////////////////////
+void GinRummy::CalculateProbabilityOfMeld(std::vector<Card>& Hand) const
+{
 }
