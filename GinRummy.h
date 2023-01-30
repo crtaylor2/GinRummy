@@ -32,11 +32,13 @@ private:
 
     void DrawGame();
     void UserInput();
+    void DealNewRound();
 
     void PrintLine(const std::string& Left, const std::string& Right) const;
     void PrintLine(const std::string& Left, const std::string& Middle, const std::string& Right) const;
 
     int FindUnmatchedMeld(std::vector<Card>& Hand) const;
+    int FindUnmatchedMeldWithPartner(std::vector<Card>& Hand, const std::vector<Card> &PartnerHand) const; // TODO
     int SumUnmatchedMeld(const std::vector<Card>& Hand) const;
 
     void SearchForRuns(std::vector<Card>& Hand) const;

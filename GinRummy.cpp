@@ -9,6 +9,29 @@ int GinRummy::LineLength = 80;
 
 GinRummy::GinRummy()
 {
+    PlayerScore = 0;
+    ComputerScore = 0;
+
+    PlayerTurn = true;
+    ShowComputerHand = false;
+    SortByRuns = true;
+
+    DealNewRound();
+    Play();
+}
+
+//////////////////////////////////////////////////////////////////////
+/// Creates the decks and deals the cards to the players
+///
+/// Returns: void
+//////////////////////////////////////////////////////////////////////
+void GinRummy::DealNewRound()
+{
+    Deck.clear();
+    PlayerCards.clear();
+    ComputerCards.clear();
+    Discard.clear();
+
     //Create 52 cards and place them in the Deck
     for(int s = DIAMOND; s <= SPADE; ++s)
     {
@@ -40,16 +63,6 @@ GinRummy::GinRummy()
     //Turn over top card card place in the Discard pile
     Discard.push_back(Deck.back());
     Deck.pop_back();
-
-    //Initialize variables
-    PlayerScore = 0;
-    ComputerScore = 0;
-
-    PlayerTurn = true;
-    ShowComputerHand = false;
-    SortByRuns = true;
-
-    Play();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -91,6 +104,12 @@ void GinRummy::DrawGame()
 
     std::cout << std::endl; //4
 
+    FindUnmatchedMeld(PlayerCards);
+    FindUnmatchedMeld(ComputerCards);
+
+    for(Card& card : Discard)
+        card.isMeld = false;
+
     if(SortByRuns)
     {
         std::sort(PlayerCards.begin(), PlayerCards.end(), Card::CompareForRuns);
@@ -119,9 +138,9 @@ void GinRummy::DrawGame()
         else if(idx == 2)
             Middle = !Discard.empty() ? Card::CardToString(Discard.back()) : "";
         else if(idx == 5)
-            Middle = "(F) - Take Face Down";
+            Middle = "(F) - Take Face Down (size of " + std::to_string(Deck.size()) + ")";
         else if(idx == 6)
-            Middle = "(D) - Take Discard";
+            Middle = "(D) - Take Discard (size of " + std::to_string(Discard.size()) + ")";
         PrintLine(Left, Middle, Right);
     }
 
@@ -134,7 +153,7 @@ void GinRummy::DrawGame()
     PrintLine("(P) - Sort for Sets", "(H) - Hide Hand"); //18
     std::cout << std::endl; //19
     PrintLine("(Dn) - Discard card #n", "(K) - Knock"); //20
-    PrintLine("(M) - Unmatched Meld Count", "(G) - Gin"); //21
+    PrintLine("", "(G) - Gin"); //21
     PrintLine("(C) - Computer Play", "(Q) - Quit"); //22
     std::cout << border << std::endl; //23
     std::cout << "Enter command: "; //24
@@ -170,11 +189,6 @@ void GinRummy::UserInput()
     {
         exit(0);
     }
-    else if(Input == "M")
-    {
-        FindUnmatchedMeld(PlayerCards);
-        FindUnmatchedMeld(ComputerCards);
-    }
     else if(Input == "D")
     {
         if(PlayerTurn && PlayerCards.size() < 11 && !Discard.empty())
@@ -203,6 +217,72 @@ void GinRummy::UserInput()
                 PlayerCards.pop_back();
                 PlayerTurn = false;
             }
+        }
+    }
+    else if(Input == "C")
+    {
+        if(!PlayerTurn)
+        {
+            if(PickupDiscard(ComputerCards))
+            {
+                ComputerCards.push_back(Discard.back());
+                Discard.pop_back();
+            }
+            else
+            {
+                ComputerCards.push_back(Deck.back());
+                Deck.pop_back();
+            }
+
+            FindUnmatchedMeld(ComputerCards);
+
+            int idx = IndexToDiscard(ComputerCards);
+            Discard.push_back(ComputerCards.at(idx));
+            ComputerCards.erase(ComputerCards.begin() + idx);
+
+            if(ComputerCards.size() < 11 && SumUnmatchedMeld(ComputerCards) == 0)
+            {
+                ComputerScore += FindUnmatchedMeldWithPartner(PlayerCards, ComputerCards) + 20;
+                DealNewRound();
+            }
+            else if(Knock(ComputerCards))
+            {
+                int ComputerHandUnmatched = SumUnmatchedMeld(ComputerCards);
+                int PlayerHandUnmatched = FindUnmatchedMeldWithPartner(PlayerCards, ComputerCards);
+
+                if(ComputerHandUnmatched < PlayerHandUnmatched)
+                    ComputerScore += PlayerHandUnmatched - ComputerHandUnmatched;
+                else
+                    PlayerScore += ComputerHandUnmatched - PlayerHandUnmatched + 10;
+
+                DealNewRound();
+            }
+
+            PlayerTurn = true;
+        }
+    }
+    else if(Input == "K")
+    {
+        if(PlayerCards.size() < 11 && SumUnmatchedMeld(PlayerCards) < 11)
+        {
+            int PlayerHandUnmatched = SumUnmatchedMeld(PlayerCards);
+            int ComputerHandUnmatched = FindUnmatchedMeldWithPartner(ComputerCards, PlayerCards);
+
+            if(PlayerHandUnmatched < ComputerHandUnmatched)
+                PlayerScore += ComputerHandUnmatched - PlayerHandUnmatched;
+            else
+                ComputerScore += PlayerHandUnmatched - ComputerHandUnmatched + 10;
+
+            DealNewRound();
+        }
+    }
+    else if(Input == "G")
+    {
+        if(PlayerCards.size() < 11 && SumUnmatchedMeld(PlayerCards) == 0)
+        {
+            PlayerScore += FindUnmatchedMeldWithPartner(ComputerCards, PlayerCards) + 20;
+
+            DealNewRound();
         }
     }
     else
@@ -302,6 +382,21 @@ int GinRummy::FindUnmatchedMeld(std::vector<Card> &Hand) const
 }
 
 //////////////////////////////////////////////////////////////////////
+/// Reviews a Hand for the optimal method of determining which cards
+/// are (and are not) meld. This function will attempt to meld the
+/// contents in Hand with those in PartnerHand as well. The function
+/// will reset the isMeld member on the Card class for the Hand vector
+/// but will not modify the PartnerHand vector (as this function relies
+/// on the fact that PartnerHand has already been melded.
+///
+/// Returns: int (the sum of the unmelded card's values in the Hand)
+//////////////////////////////////////////////////////////////////////
+int GinRummy::FindUnmatchedMeldWithPartner(std::vector<Card> &Hand, const std::vector<Card> &PartnerHand) const
+{
+    return FindUnmatchedMeld(Hand);
+}
+
+//////////////////////////////////////////////////////////////////////
 /// Loops through a Hand of cards and keeps a running total of the
 /// unmelded cards. This function relies upon the isMeld member of the
 /// Cards being set correctly and will NOT try to find any meld combos
@@ -398,6 +493,14 @@ void GinRummy::AddMeld(std::vector<Card> &Hand, std::vector<Card> &Meld) const
 //////////////////////////////////////////////////////////////////////
 bool GinRummy::PickupDiscard(const std::vector<Card>& Hand) const
 {
+    // for now at least force the computer to pickup the discard if they can meld it
+    std::vector<Card> HandAfterDiscard = Hand;
+    HandAfterDiscard.push_back(Discard.back());
+    FindUnmatchedMeld(HandAfterDiscard);
+    HandAfterDiscard.erase(HandAfterDiscard.begin() + IndexToDiscard(HandAfterDiscard));
+    if(SumUnmatchedMeld(HandAfterDiscard) < SumUnmatchedMeld(Hand))
+        return true;
+
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> distrib(0, 1);
@@ -413,10 +516,18 @@ bool GinRummy::PickupDiscard(const std::vector<Card>& Hand) const
 //////////////////////////////////////////////////////////////////////
 int GinRummy::IndexToDiscard(const std::vector<Card>& Hand) const
 {
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<> distrib(0, Hand.size() - 1);
-    return distrib(gen);
+    if(SumUnmatchedMeld(Hand) == 0)
+        return 0;
+
+    while(true)
+    {
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_int_distribution<> distrib(0, Hand.size() - 1);
+        int idx = distrib(gen);
+        if(!Hand.at(idx).isMeld)
+            return idx;
+    }
 }
 
 //////////////////////////////////////////////////////////////////////
