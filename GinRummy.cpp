@@ -138,9 +138,9 @@ void GinRummy::DrawGame()
         else if(idx == 2)
             Middle = !Discard.empty() ? Card::CardToString(Discard.back()) : "";
         else if(idx == 5)
-            Middle = "(F) - Take Face Down (size of " + std::to_string(Deck.size()) + ")";
+            Middle = "(F) - Take Face Down (" + std::to_string(Deck.size()) + ")";
         else if(idx == 6)
-            Middle = "(D) - Take Discard (size of " + std::to_string(Discard.size()) + ")";
+            Middle = "(D) - Take Discard (" + std::to_string(Discard.size()) + ")";
         PrintLine(Left, Middle, Right);
     }
 
@@ -153,7 +153,7 @@ void GinRummy::DrawGame()
     PrintLine("(P) - Sort for Sets", "(H) - Hide Hand"); //18
     std::cout << std::endl; //19
     PrintLine("(Dn) - Discard card #n", "(K) - Knock"); //20
-    PrintLine("", "(G) - Gin"); //21
+    PrintLine("(P) - Pass", "(G) - Gin"); //21
     PrintLine("(C) - Computer Play", "(Q) - Quit"); //22
     std::cout << border << std::endl; //23
     std::cout << "Enter command: "; //24
@@ -168,6 +168,8 @@ void GinRummy::UserInput()
 {
     std::string Input;
     std::cin >> Input;
+
+    std::transform(Input.begin(), Input.end(), Input.begin(), ::toupper);
 
     if(Input == "R")
     {
