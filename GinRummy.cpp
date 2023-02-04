@@ -254,23 +254,28 @@ std::string GinRummy::UserInput()
             {
                 ComputerCards.push_back(Discard.back());
                 Discard.pop_back();
+                StatusMessage = "Computer chose " + Card::CardToString(ComputerCards.back()) + " from discards";
             }
             else
             {
                 ComputerCards.push_back(Deck.back());
                 Deck.pop_back();
+                StatusMessage = "Computer chose from the deck";
             }
 
             FindUnmatchedMeld(ComputerCards);
 
             int idx = IndexToDiscard(ComputerCards);
             Discard.push_back(ComputerCards.at(idx));
+            StatusMessage += " and discarded " + Card::CardToString(Discard.back());
             ComputerCards.erase(ComputerCards.begin() + idx);
 
             if(ComputerCards.size() < 11 && SumUnmatchedMeld(ComputerCards) == 0)
             {
-                ComputerScore += FindUnmatchedMeldWithPartner(PlayerCards, ComputerCards) + 20;
+                int PlayerHandUnmatched = FindUnmatchedMeldWithPartner(PlayerCards, ComputerCards);
+                ComputerScore += PlayerHandUnmatched + 20;
                 DealNewRound();
+                StatusMessage += " Computer ginned and gained " + std::to_string(PlayerHandUnmatched + 20) + " points. Try again.";
             }
             else if(Knock(ComputerCards))
             {
@@ -278,13 +283,17 @@ std::string GinRummy::UserInput()
                 int PlayerHandUnmatched = FindUnmatchedMeldWithPartner(PlayerCards, ComputerCards);
 
                 if(ComputerHandUnmatched < PlayerHandUnmatched)
+                {
                     ComputerScore += PlayerHandUnmatched - ComputerHandUnmatched;
+                    StatusMessage += " Computer knocked and gained " + std::to_string(PlayerHandUnmatched - ComputerHandUnmatched) + "points.";
+                }
                 else
+                {
                     PlayerScore += ComputerHandUnmatched - PlayerHandUnmatched + 10;
-
+                    StatusMessage += " Computer knocked and lost. You gained " + std::to_string(ComputerHandUnmatched - PlayerHandUnmatched + 10) + " points.";
+                }
                 DealNewRound();
             }
-
             PlayerTurn = true;
         }
         else
