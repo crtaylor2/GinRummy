@@ -32,13 +32,13 @@ void GinRummy::DealNewRound()
     Discard.clear();
 
     //Create 52 cards and place them in the Deck
-    for(int s = DIAMOND; s <= SPADE; ++s)
+    for(int s = Card::DIAMOND; s <= Card::SPADE; ++s)
     {
-        for(int n = ACE; n <= KING; ++n)
+        for(int n = Card::ACE; n <= Card::KING; ++n)
         {
             Card card;
-            card.suit = (Suit)s;
-            card.value = (Value)n;
+            card.suit = (Card::Suit)s;
+            card.value = (Card::Value)n;
             card.isMeld = false;
             Deck.push_back(card);
         }
@@ -156,7 +156,7 @@ void GinRummy::DrawGame(const std::string& StatusMessage)
     PrintLine("(P) - Pass", "(G) - Gin"); //21
     PrintLine("(C) - Computer Play", "(Q) - Quit"); //22
     std::cout << border << std::endl; //23
-    std::cout << "**" << StatusMessage << "** Enter command: "; //24
+    std::cout << "**" << StatusMessage << "** Enter Command: "; //24
 }
 
 //////////////////////////////////////////////////////////////////////

@@ -3,32 +3,32 @@
 
 #include <string>
 
-enum Suit {
-    DIAMOND,
-    CLUB,
-    HEART,
-    SPADE
-};
-
-enum Value {
-    ACE,
-    TWO,
-    THREE,
-    FOUR,
-    FIVE,
-    SIX,
-    SEVEN,
-    EIGHT,
-    NINE,
-    TEN,
-    JACK,
-    QUEEN,
-    KING
-};
-
 class Card {
 
 public:
+    enum Suit {
+        DIAMOND,
+        CLUB,
+        HEART,
+        SPADE
+    };
+
+    enum Value {
+        ACE,
+        TWO,
+        THREE,
+        FOUR,
+        FIVE,
+        SIX,
+        SEVEN,
+        EIGHT,
+        NINE,
+        TEN,
+        JACK,
+        QUEEN,
+        KING
+    };
+
     Suit suit;
     Value value;
     bool isMeld;
