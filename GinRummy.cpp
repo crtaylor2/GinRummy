@@ -39,7 +39,7 @@ void GinRummy::DealNewRound()
             Card card;
             card.suit = (Card::Suit)s;
             card.value = (Card::Value)n;
-            card.isMeld = false;
+            card.meld = Card::NOTMELD;
             Deck.push_back(card);
         }
     }
@@ -108,7 +108,7 @@ void GinRummy::DrawGame(const std::string& StatusMessage)
     FindUnmatchedMeld(ComputerCards);
 
     for(Card& card : Discard)
-        card.isMeld = false;
+        card.meld = Card::NOTMELD;
 
     if(SortByRuns)
     {
@@ -408,7 +408,7 @@ void GinRummy::PrintLine(const std::string& Left, const std::string& Middle, con
 int GinRummy::FindUnmatchedMeld(std::vector<Card> &Hand) const
 {
     for(Card& card : Hand)
-        card.isMeld = false;
+        card.meld = Card::NOTMELD;
 
     std::vector<Card> RunsThenSets = Hand;
     std::vector<Card> SetsThenRuns = Hand;
@@ -454,6 +454,16 @@ int GinRummy::FindUnmatchedMeld(std::vector<Card> &Hand) const
 //////////////////////////////////////////////////////////////////////
 int GinRummy::FindUnmatchedMeldWithPartner(std::vector<Card> &Hand, const std::vector<Card> &PartnerHand) const
 {
+    // 1.try self meld then partner meld
+    // A. meld own hand
+    // B. loop over all unmelded cards in hand and try to meld on partner
+
+    // 2. try to parner meld then self meld
+    // A. loop over all cards and try to meld them on partner
+    // B. meld own hands (being careful not to re-meld anything
+
+    // 3. choose the better option
+
     return FindUnmatchedMeld(Hand);
 }
 
@@ -468,7 +478,7 @@ int GinRummy::SumUnmatchedMeld(const std::vector<Card> &Hand) const
 {
     int Count = 0;
     for(const Card& card : Hand)
-        if(!card.isMeld)
+        if(!card.isMeld())
             Count = Count + Card::CardPoints(card);
 
     return Count;
@@ -488,9 +498,9 @@ void GinRummy::SearchForRuns(std::vector<Card> &Hand) const
         if((Hand.at(idx).suit == Hand.at(idx - 1).suit && Hand.at(idx - 1).suit == Hand.at(idx - 2).suit) &&
            (Hand.at(idx).value == (Hand.at(idx - 1).value + 1) && (Hand.at(idx - 1).value + 1) == (Hand.at(idx - 2).value + 2)) )
         {
-            Hand.at(idx).isMeld = true;
-            Hand.at(idx - 1).isMeld = true;
-            Hand.at(idx - 2).isMeld = true;
+            Hand.at(idx).meld = Card::RUNMELD;
+            Hand.at(idx - 1).meld = Card::RUNMELD;
+            Hand.at(idx - 2).meld = Card::RUNMELD;
         }
     }
 }
@@ -508,9 +518,9 @@ void GinRummy::SearchForSets(std::vector<Card> &Hand) const
     {
         if(Hand.at(idx).value == Hand.at(idx - 1).value && Hand.at(idx - 1).value == Hand.at(idx - 2).value)
         {
-            Hand.at(idx).isMeld = true;
-            Hand.at(idx - 1).isMeld = true;
-            Hand.at(idx - 2).isMeld = true;
+            Hand.at(idx).meld = Card::SETMELD;
+            Hand.at(idx - 1).meld = Card::SETMELD;
+            Hand.at(idx - 2).meld = Card::SETMELD;
         }
     }
 }
@@ -526,7 +536,7 @@ void GinRummy::RemoveMeld(std::vector<Card> &Hand, std::vector<Card> &Meld) cons
     std::vector<Card> NonMeldHold;
     for(Card& card : Hand)
     {
-        if(card.isMeld)
+        if(card.isMeld())
             Meld.push_back(card);
         else
             NonMeldHold.push_back(card);
@@ -586,7 +596,7 @@ int GinRummy::IndexToDiscard(const std::vector<Card>& Hand) const
         std::mt19937 gen(rd());
         std::uniform_int_distribution<> distrib(0, Hand.size() - 1);
         int idx = distrib(gen);
-        if(!Hand.at(idx).isMeld)
+        if(!Hand.at(idx).isMeld())
             return idx;
     }
 }

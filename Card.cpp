@@ -67,12 +67,17 @@ std::string Card::CardToString(const Card& Card)
             break;
     }
 
-    if(Card.isMeld)
+    if(Card.isMeld())
     {
         std::transform(CardString.begin(), CardString.end(), CardString.begin(), ::toupper);
     }
 
     return CardString;
+}
+
+bool Card::isMeld() const
+{
+    return meld == RUNMELD || meld == SETMELD;
 }
 
 int Card::CardPoints(Card card)

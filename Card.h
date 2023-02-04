@@ -29,9 +29,18 @@ public:
         KING
     };
 
+    enum MeldStatus
+    {
+        NOTMELD,
+        RUNMELD,
+        SETMELD
+    };
+
     Suit suit;
     Value value;
-    bool isMeld;
+    MeldStatus meld;
+
+    bool isMeld() const;
 
     static std::string CardToString(const Card& Card);
     static int CardPoints(Card card);
