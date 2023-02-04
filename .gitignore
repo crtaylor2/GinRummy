@@ -77,3 +77,4 @@ CMakeLists.txt.user
 cmake_install.cmake
 GinRummy
 GinRummy_autogen/*
+.cmake

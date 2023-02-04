@@ -3,7 +3,6 @@
 #include <iostream>
 #include <random>
 #include <algorithm>
-#include <sstream>
 
 int GinRummy::LineLength = 80;
 
@@ -73,10 +72,11 @@ void GinRummy::DealNewRound()
 //////////////////////////////////////////////////////////////////////
 void GinRummy::Play()
 {
+    std::string StatusMessage = "Welcome! Good Luck.";
     while(true)
     {
-        DrawGame();
-        UserInput();
+        DrawGame(StatusMessage);
+        StatusMessage = UserInput();
     }
 }
 
@@ -85,22 +85,22 @@ void GinRummy::Play()
 ///
 /// Returns: void
 //////////////////////////////////////////////////////////////////////
-void GinRummy::DrawGame()
+void GinRummy::DrawGame(const std::string& StatusMessage)
 {
     static const std::string border(LineLength, 'x');
 
     std::cout << border << std::endl; //1
     std::cout << std::endl; //2
 
-    std::ostringstream LineLeft; //start to build line 3
-    LineLeft << "YOU (" << PlayerScore << " points)";
+    std::string LineLeft; //start to build line 3
+    LineLeft = "YOU (" + std::to_string(PlayerScore) + " points)";
     if(PlayerTurn)
-        LineLeft << " - your turn";
-    std::ostringstream LineRight;
+        LineLeft += " - your turn";
+    std::string LineRight;
     if(!PlayerTurn)
-        LineRight << "your turn - ";
-    LineRight << "(" << ComputerScore << " points) COMPUTER";
-    PrintLine(LineLeft.str(), LineRight.str()); //3
+        LineRight += "your turn - ";
+    LineRight += "(" + std::to_string(ComputerScore) + " points) COMPUTER";
+    PrintLine(LineLeft, LineRight); //3
 
     std::cout << std::endl; //4
 
@@ -156,35 +156,41 @@ void GinRummy::DrawGame()
     PrintLine("(P) - Pass", "(G) - Gin"); //21
     PrintLine("(C) - Computer Play", "(Q) - Quit"); //22
     std::cout << border << std::endl; //23
-    std::cout << "Enter command: "; //24
+    std::cout << "**" << StatusMessage << "** Enter command: "; //24
 }
 
 //////////////////////////////////////////////////////////////////////
 /// Accepts input from the user and responds accordingly
 ///
-/// Returns: void
+/// Returns: std::string (status message from turns)
 //////////////////////////////////////////////////////////////////////
-void GinRummy::UserInput()
+std::string GinRummy::UserInput()
 {
     std::string Input;
     std::cin >> Input;
 
     std::transform(Input.begin(), Input.end(), Input.begin(), ::toupper);
 
+    std::string StatusMessage;
+
     if(Input == "R")
     {
+        StatusMessage = "Sorted hands by runs";
         SortByRuns = true;
     }
     else if(Input == "P")
     {
+        StatusMessage = "Sorted hands by sets";
         SortByRuns = false;
     }
     else if(Input == "S")
     {
+        StatusMessage = "Showed computer hand";
         ShowComputerHand = true;
     }
     else if(Input == "H")
     {
+        StatusMessage = "Hid computer hand";
         ShowComputerHand = false;
     }
     else if(Input == "Q")
@@ -197,6 +203,11 @@ void GinRummy::UserInput()
         {
             PlayerCards.push_back(Discard.back());
             Discard.pop_back();
+            StatusMessage = "Chose " + Card::CardToString(PlayerCards.back()) + " from discard pile";
+        }
+        else
+        {
+            StatusMessage = "Error - unable to choose from discard pile";
         }
     }
     else if(Input == "F")
@@ -205,6 +216,11 @@ void GinRummy::UserInput()
         {
             PlayerCards.push_back(Deck.back());
             Deck.pop_back();
+            StatusMessage = "Chose " + Card::CardToString(PlayerCards.back()) + " from face down pile";
+        }
+        else
+        {
+            StatusMessage = "Error - unable to choose from face down pile";
         }
     }
     else if(!Input.empty() && Input.at(0) == 'D')
@@ -217,8 +233,17 @@ void GinRummy::UserInput()
                 Discard.push_back(PlayerCards.at(idx));
                 PlayerCards.at(idx) = PlayerCards.back();
                 PlayerCards.pop_back();
+                StatusMessage = "You discarded " + Card::CardToString(Discard.back());
                 PlayerTurn = false;
             }
+            else
+            {
+                StatusMessage = "Error - unable to discard " + idx;
+            }
+        }
+        else
+        {
+            StatusMessage = "Error - unable to discard";
         }
     }
     else if(Input == "C")
@@ -262,6 +287,10 @@ void GinRummy::UserInput()
 
             PlayerTurn = true;
         }
+        else
+        {
+            StatusMessage = "Error - Player Turn";
+        }
     }
     else if(Input == "K")
     {
@@ -271,26 +300,47 @@ void GinRummy::UserInput()
             int ComputerHandUnmatched = FindUnmatchedMeldWithPartner(ComputerCards, PlayerCards);
 
             if(PlayerHandUnmatched < ComputerHandUnmatched)
+            {
                 PlayerScore += ComputerHandUnmatched - PlayerHandUnmatched;
+                StatusMessage = "CONGRATULATIONS! You knocked with " + std::to_string(PlayerHandUnmatched) +
+                        " points. The computer had " + std::to_string(ComputerHandUnmatched) + " points.";
+            }
             else
+            {
                 ComputerScore += PlayerHandUnmatched - ComputerHandUnmatched + 10;
+                StatusMessage = "GOOD TRY! You knocked with " + std::to_string(PlayerHandUnmatched) +
+                        " points. The computer had " + std::to_string(ComputerHandUnmatched) + " points.";
+            }
 
             DealNewRound();
+        }
+        else
+        {
+            StatusMessage = "Error - you are unable to knock";
         }
     }
     else if(Input == "G")
     {
         if(PlayerCards.size() < 11 && SumUnmatchedMeld(PlayerCards) == 0)
         {
-            PlayerScore += FindUnmatchedMeldWithPartner(ComputerCards, PlayerCards) + 20;
+            int ComputerHandUnmatched = FindUnmatchedMeldWithPartner(ComputerCards, PlayerCards);
+            PlayerScore += ComputerHandUnmatched + 20;
 
             DealNewRound();
+
+            StatusMessage = "CONGRATULATIONS! You ginned. The computer had " + std::to_string(ComputerHandUnmatched) + " points.";
+        }
+        else
+        {
+            StatusMessage = "Unable to gin, your unmatched meld is " + SumUnmatchedMeld(PlayerCards);
         }
     }
     else
     {
-        std::cout << "Unexpected Input of " << Input << std::endl;
+        StatusMessage = "ERROR: Unexpected Input of " + Input;
     }
+
+    return StatusMessage;
 }
 
 //////////////////////////////////////////////////////////////////////

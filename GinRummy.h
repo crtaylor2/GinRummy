@@ -30,8 +30,8 @@ private:
 
     static int LineLength;
 
-    void DrawGame();
-    void UserInput();
+    void DrawGame(const std::string& StatusMessage);
+    std::string UserInput();
     void DealNewRound();
 
     void PrintLine(const std::string& Left, const std::string& Right) const;
