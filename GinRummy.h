@@ -37,15 +37,12 @@ private:
     void PrintLine(const std::string& Left, const std::string& Right) const;
     void PrintLine(const std::string& Left, const std::string& Middle, const std::string& Right) const;
 
-    int FindUnmatchedMeld(std::vector<Card>& Hand) const;
-    int FindUnmatchedMeldWithPartner(std::vector<Card>& Hand, const std::vector<Card> &PartnerHand) const; // TODO
+    int FindUnmatchedMeld(std::vector<Card>& Hand, bool ResetMeld = true) const;
+    int FindUnmatchedMeldWithPartner(const std::vector<Card>& Hand, const std::vector<Card> &PartnerHand) const;
     int SumUnmatchedMeld(const std::vector<Card>& Hand) const;
 
     void SearchForRuns(std::vector<Card>& Hand) const;
     void SearchForSets(std::vector<Card>& Hand) const;
-
-    void AddMeld(std::vector<Card>& Hand, std::vector<Card>& Meld) const;
-    void RemoveMeld(std::vector<Card>& Hand, std::vector<Card>& Meld) const;
 
     bool PickupDiscard(const std::vector<Card>& Hand) const; // TODO
     int IndexToDiscard(const std::vector<Card>& Hand) const; // TODO

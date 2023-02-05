@@ -405,10 +405,11 @@ void GinRummy::PrintLine(const std::string& Left, const std::string& Middle, con
 ///
 /// Returns: int (the sum of the unmelded card's values in the Hand)
 //////////////////////////////////////////////////////////////////////
-int GinRummy::FindUnmatchedMeld(std::vector<Card> &Hand) const
+int GinRummy::FindUnmatchedMeld(std::vector<Card> &Hand, bool ResetMeld) const
 {
-    for(Card& card : Hand)
-        card.meld = Card::NOTMELD;
+    if(ResetMeld)
+        for(Card& card : Hand)
+            card.meld = Card::NOTMELD;
 
     std::vector<Card> RunsThenSets = Hand;
     std::vector<Card> SetsThenRuns = Hand;
@@ -418,16 +419,12 @@ int GinRummy::FindUnmatchedMeld(std::vector<Card> &Hand) const
 
     // Attempt 1 - runs then sets
     SearchForRuns(RunsThenSets);
-    RemoveMeld(RunsThenSets, HoldMeld);
     SearchForSets(RunsThenSets);
-    AddMeld(RunsThenSets, HoldMeld);
     RunsThenSetsCount = SumUnmatchedMeld(RunsThenSets);
 
     // Attempt 2 - sets thenn runs
     SearchForSets(SetsThenRuns);
-    RemoveMeld(SetsThenRuns, HoldMeld);
     SearchForRuns(SetsThenRuns);
-    AddMeld(SetsThenRuns, HoldMeld);
     SetsThenRunsCount = SumUnmatchedMeld(SetsThenRuns);
 
     if(RunsThenSetsCount < SetsThenRunsCount)
@@ -448,23 +445,26 @@ int GinRummy::FindUnmatchedMeld(std::vector<Card> &Hand) const
 /// contents in Hand with those in PartnerHand as well. The function
 /// will reset the isMeld member on the Card class for the Hand vector
 /// but will not modify the PartnerHand vector (as this function relies
-/// on the fact that PartnerHand has already been melded.
+/// on the fact that PartnerHand has already been melded. The contents
+/// of Hand won't be modified with the correct meld status.
 ///
 /// Returns: int (the sum of the unmelded card's values in the Hand)
 //////////////////////////////////////////////////////////////////////
-int GinRummy::FindUnmatchedMeldWithPartner(std::vector<Card> &Hand, const std::vector<Card> &PartnerHand) const
+int GinRummy::FindUnmatchedMeldWithPartner(const std::vector<Card> &Hand, const std::vector<Card> &PartnerHand) const
 {
-    // 1.try self meld then partner meld
-    // A. meld own hand
-    // B. loop over all unmelded cards in hand and try to meld on partner
+    std::vector<Card> TempHand = Hand;
+    for(Card& C : TempHand)
+    {
+        C.meld = Card::NOTMELD;
+    }
 
-    // 2. try to parner meld then self meld
-    // A. loop over all cards and try to meld them on partner
-    // B. meld own hands (being careful not to re-meld anything
+    for(Card C : PartnerHand)
+    {
+        if(C.isMeld())
+            TempHand.push_back(C);
+    }
 
-    // 3. choose the better option
-
-    return FindUnmatchedMeld(Hand);
+    return FindUnmatchedMeld(TempHand, false);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -498,9 +498,12 @@ void GinRummy::SearchForRuns(std::vector<Card> &Hand) const
         if((Hand.at(idx).suit == Hand.at(idx - 1).suit && Hand.at(idx - 1).suit == Hand.at(idx - 2).suit) &&
            (Hand.at(idx).value == (Hand.at(idx - 1).value + 1) && (Hand.at(idx - 1).value + 1) == (Hand.at(idx - 2).value + 2)) )
         {
-            Hand.at(idx).meld = Card::RUNMELD;
-            Hand.at(idx - 1).meld = Card::RUNMELD;
-            Hand.at(idx - 2).meld = Card::RUNMELD;
+            if(Hand.at(idx).meld != Card::SETMELD && Hand.at(idx - 1).meld != Card::SETMELD && Hand.at(idx - 2).meld != Card::SETMELD)
+            {
+                Hand.at(idx).meld = Card::RUNMELD;
+                Hand.at(idx - 1).meld = Card::RUNMELD;
+                Hand.at(idx - 2).meld = Card::RUNMELD;
+            }
         }
     }
 }
@@ -518,41 +521,14 @@ void GinRummy::SearchForSets(std::vector<Card> &Hand) const
     {
         if(Hand.at(idx).value == Hand.at(idx - 1).value && Hand.at(idx - 1).value == Hand.at(idx - 2).value)
         {
-            Hand.at(idx).meld = Card::SETMELD;
-            Hand.at(idx - 1).meld = Card::SETMELD;
-            Hand.at(idx - 2).meld = Card::SETMELD;
+            if(Hand.at(idx).meld != Card::RUNMELD && Hand.at(idx - 1).meld != Card::RUNMELD && Hand.at(idx - 2).meld != Card::RUNMELD)
+            {
+                Hand.at(idx).meld = Card::SETMELD;
+                Hand.at(idx - 1).meld = Card::SETMELD;
+                Hand.at(idx - 2).meld = Card::SETMELD;
+            }
         }
     }
-}
-
-//////////////////////////////////////////////////////////////////////
-/// Loops through a Hand of cards and removes all of the melded cards
-/// from that hand (and places them in Meld).
-///
-/// Returns: void
-//////////////////////////////////////////////////////////////////////
-void GinRummy::RemoveMeld(std::vector<Card> &Hand, std::vector<Card> &Meld) const
-{
-    std::vector<Card> NonMeldHold;
-    for(Card& card : Hand)
-    {
-        if(card.isMeld())
-            Meld.push_back(card);
-        else
-            NonMeldHold.push_back(card);
-    }
-    Hand = NonMeldHold;
-}
-
-//////////////////////////////////////////////////////////////////////
-/// Adds the cards in the Meld vector into the Hand vector
-///
-/// Returns: void
-//////////////////////////////////////////////////////////////////////
-void GinRummy::AddMeld(std::vector<Card> &Hand, std::vector<Card> &Meld) const
-{
-    Hand.insert(Hand.end(), Meld.begin(), Meld.end());
-    Meld.clear();
 }
 
 //////////////////////////////////////////////////////////////////////
