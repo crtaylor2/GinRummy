@@ -78,3 +78,10 @@ cmake_install.cmake
 GinRummy
 GinRummy_autogen/*
 .cmake
+CTestTestfile.cmake
+src/CTestTestfile.cmake
+tests/CTestTestfile.cmake
+_deps/
+tests/GinRummyTest
+src/GinRummyExe
+

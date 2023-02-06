@@ -13,6 +13,8 @@ public:
 
     void Play();
 
+    int SumUnmatchedMeld(const std::vector<Card>& Hand) const;
+
 private:
     std::vector<Card> Deck;
 
@@ -39,7 +41,6 @@ private:
 
     int FindUnmatchedMeld(std::vector<Card>& Hand, bool ResetMeld = true) const;
     int FindUnmatchedMeldWithPartner(const std::vector<Card>& Hand, const std::vector<Card> &PartnerHand) const;
-    int SumUnmatchedMeld(const std::vector<Card>& Hand) const;
 
     void SearchForRuns(std::vector<Card>& Hand) const;
     void SearchForSets(std::vector<Card>& Hand) const;
@@ -48,7 +49,7 @@ private:
     int IndexToDiscard(const std::vector<Card>& Hand) const; // TODO
     bool Knock(const std::vector<Card>& Hand) const; // TODO
 
-    double ProbabilityOfGin(const std::vector<Card>& Hand) const;
+    double ProbabilityOfGin(std::vector<Card> &Hand) const;
     void CalculateProbabilityOfMeld(std::vector<Card>& Hand) const; // TODO
 };
 

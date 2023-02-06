@@ -16,7 +16,6 @@ GinRummy::GinRummy()
     SortByRuns = true;
 
     DealNewRound();
-    Play();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -595,7 +594,7 @@ bool GinRummy::Knock(const std::vector<Card>& Hand) const
 ///
 /// Returns: double (probability of gin)
 //////////////////////////////////////////////////////////////////////
-double GinRummy::ProbabilityOfGin(const std::vector<Card>& Hand) const
+double GinRummy::ProbabilityOfGin(std::vector<Card>& Hand) const
 {
     CalculateProbabilityOfMeld(Hand);
     double product = 1.0;
