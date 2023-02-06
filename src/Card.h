@@ -36,6 +36,8 @@ public:
         SETMELD
     };
 
+    Card(Suit s, Value v);
+
     Suit suit;
     Value value;
     MeldStatus meld;

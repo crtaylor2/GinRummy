@@ -14,6 +14,8 @@ public:
     void Play();
 
     int SumUnmatchedMeld(const std::vector<Card>& Hand) const;
+    int FindUnmatchedMeld(std::vector<Card>& Hand, bool ResetMeld = true) const;
+    int FindUnmatchedMeldWithPartner(const std::vector<Card>& Hand, const std::vector<Card> &PartnerHand) const;
 
 private:
     std::vector<Card> Deck;
@@ -38,9 +40,6 @@ private:
 
     void PrintLine(const std::string& Left, const std::string& Right) const;
     void PrintLine(const std::string& Left, const std::string& Middle, const std::string& Right) const;
-
-    int FindUnmatchedMeld(std::vector<Card>& Hand, bool ResetMeld = true) const;
-    int FindUnmatchedMeldWithPartner(const std::vector<Card>& Hand, const std::vector<Card> &PartnerHand) const;
 
     void SearchForRuns(std::vector<Card>& Hand) const;
     void SearchForSets(std::vector<Card>& Hand) const;

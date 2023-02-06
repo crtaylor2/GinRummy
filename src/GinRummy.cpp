@@ -35,10 +35,7 @@ void GinRummy::DealNewRound()
     {
         for(int n = Card::ACE; n <= Card::KING; ++n)
         {
-            Card card;
-            card.suit = (Card::Suit)s;
-            card.value = (Card::Value)n;
-            card.meld = Card::NOTMELD;
+            Card card((Card::Suit)s, (Card::Value)n);
             Deck.push_back(card);
         }
     }

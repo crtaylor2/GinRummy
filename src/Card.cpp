@@ -2,6 +2,14 @@
 
 #include <algorithm>
 
+Card::Card(Suit s, Value v)
+{
+    suit = s;
+    value = v;
+    meld = NOTMELD;
+    probOfMeld = 0.0;
+}
+
 std::string Card::CardToString(const Card& Card)
 {
     std::string CardString;
