@@ -597,7 +597,13 @@ bool GinRummy::Knock(const std::vector<Card>& Hand) const
 //////////////////////////////////////////////////////////////////////
 double GinRummy::ProbabilityOfGin(const std::vector<Card>& Hand) const
 {
-    return 0.5;
+    CalculateProbabilityOfMeld(Hand);
+    double product = 1.0;
+    for(int idx = 0; idx < Hand.size(); ++idx)
+    {
+        product *= Hand.at(idx).probOfMeld;
+    }
+    return product;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -608,4 +614,11 @@ double GinRummy::ProbabilityOfGin(const std::vector<Card>& Hand) const
 //////////////////////////////////////////////////////////////////////
 void GinRummy::CalculateProbabilityOfMeld(std::vector<Card>& Hand) const
 {
+    for(int idx = 0; idx < Hand.size(); ++idx)
+    {
+        if(Hand.at(idx).isMeld())
+            Hand.at(idx).probOfMeld = 1.0;
+        else
+            Hand.at(idx).probOfMeld = 0.25;
+    }
 }

@@ -48,7 +48,7 @@ private:
     int IndexToDiscard(const std::vector<Card>& Hand) const; // TODO
     bool Knock(const std::vector<Card>& Hand) const; // TODO
 
-    double ProbabilityOfGin(const std::vector<Card>& Hand) const; // TODO
+    double ProbabilityOfGin(const std::vector<Card>& Hand) const;
     void CalculateProbabilityOfMeld(std::vector<Card>& Hand) const; // TODO
 };
 

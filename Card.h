@@ -39,6 +39,7 @@ public:
     Suit suit;
     Value value;
     MeldStatus meld;
+    double probOfMeld;
 
     bool isMeld() const;
 
