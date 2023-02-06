@@ -17,6 +17,14 @@ public:
     int FindUnmatchedMeld(std::vector<Card>& Hand, bool ResetMeld = true) const;
     int FindUnmatchedMeldWithPartner(const std::vector<Card>& Hand, const std::vector<Card> &PartnerHand) const;
 
+    void SearchForRuns(std::vector<Card>& Hand) const;
+    void SearchForSets(std::vector<Card>& Hand) const;
+
+    void CalculateProbabilityOfMeld(std::vector<Card>& Hand) const; // TODO
+    double ProbabilityOfGin(std::vector<Card>& Hand) const;
+
+    std::vector<Card> Discard;
+
 private:
     std::vector<Card> Deck;
 
@@ -30,8 +38,6 @@ private:
     bool ShowComputerHand;
     bool SortByRuns;
 
-    std::vector<Card> Discard;
-
     static int LineLength;
 
     void DrawGame(const std::string& StatusMessage);
@@ -41,15 +47,9 @@ private:
     void PrintLine(const std::string& Left, const std::string& Right) const;
     void PrintLine(const std::string& Left, const std::string& Middle, const std::string& Right) const;
 
-    void SearchForRuns(std::vector<Card>& Hand) const;
-    void SearchForSets(std::vector<Card>& Hand) const;
-
     bool PickupDiscard(std::vector<Card>& Hand) const;
     int IndexToDiscard(std::vector<Card>& Hand) const; // TODO
     bool Knock(std::vector<Card>& Hand) const;
-
-    double ProbabilityOfGin(std::vector<Card>& Hand) const;
-    void CalculateProbabilityOfMeld(std::vector<Card>& Hand) const; // TODO
 };
 
 #endif // GINRUMMY_H
