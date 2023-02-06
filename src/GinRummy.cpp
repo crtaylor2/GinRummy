@@ -412,29 +412,28 @@ int GinRummy::FindUnmatchedMeld(std::vector<Card> &Hand, bool ResetMeld) const
 
     std::vector<Card> RunsThenSets = Hand;
     std::vector<Card> SetsThenRuns = Hand;
-    std::vector<Card> HoldMeld;
-    int RunsThenSetsCount;
-    int SetsThenRunsCount;
+    int RunsThenSetsSum;
+    int SetsThenRunsSum;
 
     // Attempt 1 - runs then sets
     SearchForRuns(RunsThenSets);
     SearchForSets(RunsThenSets);
-    RunsThenSetsCount = SumUnmatchedMeld(RunsThenSets);
+    RunsThenSetsSum = SumUnmatchedMeld(RunsThenSets);
 
     // Attempt 2 - sets thenn runs
     SearchForSets(SetsThenRuns);
     SearchForRuns(SetsThenRuns);
-    SetsThenRunsCount = SumUnmatchedMeld(SetsThenRuns);
+    SetsThenRunsSum = SumUnmatchedMeld(SetsThenRuns);
 
-    if(RunsThenSetsCount < SetsThenRunsCount)
+    if(RunsThenSetsSum < SetsThenRunsSum)
     {
         Hand = RunsThenSets;
-        return RunsThenSetsCount;
+        return RunsThenSetsSum;
     }
     else
     {
         Hand = SetsThenRuns;
-        return SetsThenRunsCount;
+        return SetsThenRunsSum;
     }
 }
 
@@ -537,20 +536,20 @@ void GinRummy::SearchForSets(std::vector<Card> &Hand) const
 ///
 /// Returns: bool (true is pickup discard, false is pickup face down)
 //////////////////////////////////////////////////////////////////////
-bool GinRummy::PickupDiscard(const std::vector<Card>& Hand) const
+bool GinRummy::PickupDiscard(std::vector<Card>& Hand) const
 {
-    // for now at least force the computer to pickup the discard if they can meld it
-    std::vector<Card> HandAfterDiscard = Hand;
-    HandAfterDiscard.push_back(Discard.back());
-    FindUnmatchedMeld(HandAfterDiscard);
-    HandAfterDiscard.erase(HandAfterDiscard.begin() + IndexToDiscard(HandAfterDiscard));
-    if(SumUnmatchedMeld(HandAfterDiscard) < SumUnmatchedMeld(Hand))
-        return true;
+    double ProbGinAsIs = ProbabilityOfGin(Hand);
+    std::vector<Card> TempHand = Hand;
+    TempHand.push_back(Discard.back());
 
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<> distrib(0, 1);
-    return distrib(gen);
+    int idx = IndexToDiscard(TempHand);
+    TempHand.erase(TempHand.begin() + idx);
+
+    double ProbGinDiscard = ProbabilityOfGin(TempHand);
+    if(ProbGinDiscard > ProbGinAsIs)
+        return true;
+    else
+        return false;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -560,9 +559,9 @@ bool GinRummy::PickupDiscard(const std::vector<Card>& Hand) const
 ///
 /// Returns: int (index of the vector of the card to discard)
 //////////////////////////////////////////////////////////////////////
-int GinRummy::IndexToDiscard(const std::vector<Card>& Hand) const
+int GinRummy::IndexToDiscard(std::vector<Card> &Hand) const
 {
-    if(SumUnmatchedMeld(Hand) == 0)
+    if(FindUnmatchedMeld(Hand) == 0)
         return 0;
 
     while(true)
@@ -584,9 +583,20 @@ int GinRummy::IndexToDiscard(const std::vector<Card>& Hand) const
 ///
 /// Returns: void
 //////////////////////////////////////////////////////////////////////
-bool GinRummy::Knock(const std::vector<Card>& Hand) const
+bool GinRummy::Knock(std::vector<Card>& Hand) const
 {
-    return false;
+    int UnmatchedMeldSum = FindUnmatchedMeld(Hand);
+    if(UnmatchedMeldSum > 10)
+        return false;
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::geometric_distribution<int> d;
+
+    if(d(gen) < UnmatchedMeldSum)
+        return true;
+    else
+        return false;
 }
 
 //////////////////////////////////////////////////////////////////////

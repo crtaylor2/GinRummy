@@ -45,11 +45,11 @@ private:
     void SearchForRuns(std::vector<Card>& Hand) const;
     void SearchForSets(std::vector<Card>& Hand) const;
 
-    bool PickupDiscard(const std::vector<Card>& Hand) const; // TODO
-    int IndexToDiscard(const std::vector<Card>& Hand) const; // TODO
-    bool Knock(const std::vector<Card>& Hand) const; // TODO
+    bool PickupDiscard(std::vector<Card>& Hand) const;
+    int IndexToDiscard(std::vector<Card>& Hand) const; // TODO
+    bool Knock(std::vector<Card>& Hand) const;
 
-    double ProbabilityOfGin(std::vector<Card> &Hand) const;
+    double ProbabilityOfGin(std::vector<Card>& Hand) const;
     void CalculateProbabilityOfMeld(std::vector<Card>& Hand) const; // TODO
 };
 
