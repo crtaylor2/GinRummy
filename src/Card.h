@@ -45,11 +45,13 @@ public:
 
     bool isMeld() const;
 
-    static std::string CardToString(const Card& Card);
-    static int CardPoints(Card card);
+    std::string CardToString() const;
+    int CardPoints() const;
 
     static bool CompareForSets(Card Card1, Card Card2);
     static bool CompareForRuns(Card Card1, Card Card2);
+
+    bool operator==(const Card& other) const;
 };
 
 #endif // CARD_H

@@ -10,11 +10,11 @@ Card::Card(Suit s, Value v)
     probOfMeld = 0.0;
 }
 
-std::string Card::CardToString(const Card& Card)
+std::string Card::CardToString() const
 {
     std::string CardString;
 
-    switch(Card.value)
+    switch(value)
     {
         case ACE:
             CardString = "Ace";
@@ -59,7 +59,7 @@ std::string Card::CardToString(const Card& Card)
 
     CardString += " of ";
 
-    switch(Card.suit)
+    switch(suit)
     {
         case DIAMOND:
             CardString += "Diamonds";
@@ -75,7 +75,7 @@ std::string Card::CardToString(const Card& Card)
             break;
     }
 
-    if(Card.isMeld())
+    if(isMeld())
     {
         std::transform(CardString.begin(), CardString.end(), CardString.begin(), ::toupper);
     }
@@ -88,9 +88,9 @@ bool Card::isMeld() const
     return meld == RUNMELD || meld == SETMELD;
 }
 
-int Card::CardPoints(Card card)
+int Card::CardPoints() const
 {
-    switch(card.value)
+    switch(value)
     {
     case ACE:
         return 1;
@@ -134,4 +134,9 @@ bool Card::CompareForSets(Card Card1, Card Card2)
         return Card1.value < Card2.value;
     else
         return Card1.suit < Card2.suit;
+}
+
+bool Card::operator==(const Card& other) const
+{
+    return suit == other.suit && value == other.value;
 }

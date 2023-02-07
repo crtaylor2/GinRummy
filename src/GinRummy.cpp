@@ -119,20 +119,20 @@ void GinRummy::DrawGame(const std::string& StatusMessage)
 
     for(int idx = 0; idx < PlayerCards.size(); ++idx) //5-14, maybe 15
     {
-        std::string Left = std::to_string(idx+1) + ". " + Card::CardToString(PlayerCards.at(idx));
+        std::string Left = std::to_string(idx+1) + ". " + PlayerCards.at(idx).CardToString();
         std::string Right;
         std::string Middle;
         if(idx < ComputerCards.size())
         {
             if(ShowComputerHand)
-                Right = std::to_string(idx+1) + ". " + Card::CardToString(ComputerCards.at(idx));
+                Right = std::to_string(idx+1) + ". " + ComputerCards.at(idx).CardToString();
             else
                 Right = "Card " + std::to_string(idx+1);
         }
         if(idx == 1)
             Middle = "DISCARD PILE";
         else if(idx == 2)
-            Middle = !Discard.empty() ? Card::CardToString(Discard.back()) : "";
+            Middle = !Discard.empty() ? Discard.back().CardToString() : "";
         else if(idx == 5)
             Middle = "(F) - Take Face Down (" + std::to_string(Deck.size()) + ")";
         else if(idx == 6)
@@ -199,7 +199,7 @@ std::string GinRummy::UserInput()
         {
             PlayerCards.push_back(Discard.back());
             Discard.pop_back();
-            StatusMessage = "Chose " + Card::CardToString(PlayerCards.back()) + " from discard pile";
+            StatusMessage = "Chose " + PlayerCards.back().CardToString() + " from discard pile";
         }
         else
         {
@@ -212,7 +212,7 @@ std::string GinRummy::UserInput()
         {
             PlayerCards.push_back(Deck.back());
             Deck.pop_back();
-            StatusMessage = "Chose " + Card::CardToString(PlayerCards.back()) + " from face down pile";
+            StatusMessage = "Chose " + PlayerCards.back().CardToString() + " from face down pile";
         }
         else
         {
@@ -229,7 +229,7 @@ std::string GinRummy::UserInput()
                 Discard.push_back(PlayerCards.at(idx));
                 PlayerCards.at(idx) = PlayerCards.back();
                 PlayerCards.pop_back();
-                StatusMessage = "You discarded " + Card::CardToString(Discard.back());
+                StatusMessage = "You discarded " + Discard.back().CardToString();
                 PlayerTurn = false;
             }
             else
@@ -250,7 +250,7 @@ std::string GinRummy::UserInput()
             {
                 ComputerCards.push_back(Discard.back());
                 Discard.pop_back();
-                StatusMessage = "Computer chose " + Card::CardToString(ComputerCards.back()) + " from discards";
+                StatusMessage = "Computer chose " + ComputerCards.back().CardToString() + " from discards";
             }
             else
             {
@@ -263,7 +263,7 @@ std::string GinRummy::UserInput()
 
             int idx = IndexToDiscard(ComputerCards);
             Discard.push_back(ComputerCards.at(idx));
-            StatusMessage += " and discarded " + Card::CardToString(Discard.back());
+            StatusMessage += " and discarded " + Discard.back().CardToString();
             ComputerCards.erase(ComputerCards.begin() + idx);
 
             if(ComputerCards.size() < 11 && SumUnmatchedMeld(ComputerCards) == 0)
@@ -474,7 +474,7 @@ int GinRummy::SumUnmatchedMeld(const std::vector<Card> &Hand) const
     int Count = 0;
     for(const Card& card : Hand)
         if(!card.isMeld())
-            Count = Count + Card::CardPoints(card);
+            Count = Count + card.CardPoints();
 
     return Count;
 }
