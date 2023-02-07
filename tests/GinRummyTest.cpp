@@ -265,7 +265,6 @@ TEST(CalculateProbabilityOfGinTest, NoMeldGinTest)
     EXPECT_EQ(gr.ProbabilityOfGin(Hand), 0.0);
 }
 
-
 TEST(CalculateProbabilityOfMeldTest, AllMeldCardTest)
 {
     GinRummy gr;
