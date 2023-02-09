@@ -63,9 +63,10 @@ private:
     FRIEND_TEST(SearchForSetsTest, SearchForSets);
     FRIEND_TEST(SearchForSetsTest, SearchForSetsNoResetMeld);
 
-    bool PickupDiscard(std::vector<Card>& Hand) const;
-    int IndexToDiscard(std::vector<Card>& Hand) const; // TODO
     bool Knock(std::vector<Card>& Hand) const;
+    bool PickupDiscard(std::vector<Card>& Hand) const;
+    int IndexToDiscard(std::vector<Card>& Hand) const;
+    FRIEND_TEST(IndexToDiscardTest, IndexToDiscardTest);
 
     void CalculateProbabilityOfMeld(std::vector<Card>& Hand) const; // TODO
     FRIEND_TEST(CalculateProbabilityOfMeldTest, AllMeldCardTest);

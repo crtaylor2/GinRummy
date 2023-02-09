@@ -295,6 +295,25 @@ TEST(CalculateProbabilityOfMeldTest, NoMeldCardTest)
     EXPECT_LT(Hand.at(1).probOfMeld, 1.0);
 }
 
+TEST(IndexToDiscardTest, IndexToDiscardTest)
+{
+    GinRummy gr;
+    std::vector<Card> Hand;
+    Hand.push_back(Card(Card::HEART, Card::KING));
+    Hand.push_back(Card(Card::CLUB, Card::KING));
+    Hand.push_back(Card(Card::SPADE, Card::KING));
+    Hand.push_back(Card(Card::DIAMOND, Card::KING));
+    Hand.push_back(Card(Card::DIAMOND, Card::QUEEN));
+    Hand.push_back(Card(Card::SPADE, Card::EIGHT));
+    Hand.push_back(Card(Card::DIAMOND, Card::TEN));
+    Hand.push_back(Card(Card::CLUB, Card::TWO));
+    Hand.push_back(Card(Card::DIAMOND, Card::FIVE));
+    Hand.push_back(Card(Card::SPADE, Card::TWO));
+    gr.FindUnmatchedMeld(Hand);
+    int idx = gr.IndexToDiscard(Hand);
+    EXPECT_EQ(Hand.at(idx).value, Card::QUEEN);
+}
+
 int main(int argc, char** argv)
 {
     ::testing::InitGoogleTest(&argc, argv);

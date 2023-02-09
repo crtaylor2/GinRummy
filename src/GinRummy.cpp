@@ -558,18 +558,43 @@ bool GinRummy::PickupDiscard(std::vector<Card>& Hand) const
 //////////////////////////////////////////////////////////////////////
 int GinRummy::IndexToDiscard(std::vector<Card> &Hand) const
 {
-    if(FindUnmatchedMeld(Hand) == 0)
-        return 0;
+    // TODO This apporach can lead to a discarding of cards that will break
+    // meld in a situation where all 11 cards are melded (i.e. gin with 11)
 
-    while(true)
+    // 1. Compute probability of meld for each card
+    CalculateProbabilityOfMeld(Hand);
+
+    // 2. Discard the card with the lowest probability of meld
+    double MinProbability = Hand.at(0).probOfMeld;
+    std::vector<int> MinProbIdxs = { 0 };
+    for(int idx = 1; idx < Hand.size(); ++idx)
     {
-        std::random_device rd;
-        std::mt19937 gen(rd());
-        std::uniform_int_distribution<> distrib(0, Hand.size() - 1);
-        int idx = distrib(gen);
-        if(!Hand.at(idx).isMeld())
-            return idx;
+        if(Hand.at(idx).probOfMeld < MinProbability)
+        {
+            MinProbability = Hand.at(idx).probOfMeld;
+            MinProbIdxs.clear();
+            MinProbIdxs.push_back(idx);
+        }
+        else if(Hand.at(idx).probOfMeld == MinProbability)
+        {
+            MinProbIdxs.push_back(idx);
+        }
     }
+    if(MinProbIdxs.size() == 1)
+        return MinProbIdxs.at(0);
+
+    // 3. If there is a tie, discard the card with the highest value (i.e. Kings, Queens, etc)
+    Card::Value MaxValue = Hand.at(MinProbIdxs.at(0)).value;
+    int MaxValueIdx = MinProbIdxs.at(0);
+    for(int idx = 1; idx < MinProbIdxs.size(); ++idx)
+    {
+        if(Hand.at(MinProbIdxs.at(idx)).value > MaxValue)
+        {
+            MaxValue = Hand.at(MinProbIdxs.at(idx)).value;
+            MaxValueIdx = MinProbIdxs.at(idx);
+        }
+    }
+    return MaxValueIdx;
 }
 
 //////////////////////////////////////////////////////////////////////
