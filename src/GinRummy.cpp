@@ -149,7 +149,7 @@ void GinRummy::DrawGame(const std::string& StatusMessage)
     PrintLine("(P) - Sort for Sets", "(H) - Hide Hand"); //18
     std::cout << std::endl; //19
     PrintLine("(Dn) - Discard card #n", "(K) - Knock"); //20
-    PrintLine("(P) - Pass", "(G) - Gin"); //21
+    PrintLine("(A) - Pass", "(G) - Gin"); //21
     PrintLine("(C) - Computer Play", "(Q) - Quit"); //22
     std::cout << border << std::endl; //23
     std::cout << "**" << StatusMessage << "** Enter Command: "; //24
@@ -188,6 +188,11 @@ std::string GinRummy::UserInput()
     {
         StatusMessage = "Hid computer hand";
         ShowComputerHand = false;
+    }
+    else if(Input == "A")
+    {
+        StatusMessage = "Pass not implemented yet";
+        //TODO Implement pass
     }
     else if(Input == "Q")
     {
