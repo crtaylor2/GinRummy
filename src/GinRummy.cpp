@@ -271,6 +271,8 @@ std::string GinRummy::UserInput()
             StatusMessage += " and discarded " + Discard.back().CardToString();
             ComputerCards.erase(ComputerCards.begin() + idx);
 
+            FindUnmatchedMeld(ComputerCards);
+
             if(ComputerCards.size() < 11 && SumUnmatchedMeld(ComputerCards) == 0)
             {
                 int PlayerHandUnmatched = FindUnmatchedMeldWithPartner(PlayerCards, ComputerCards);
@@ -286,7 +288,7 @@ std::string GinRummy::UserInput()
                 if(ComputerHandUnmatched < PlayerHandUnmatched)
                 {
                     ComputerScore += PlayerHandUnmatched - ComputerHandUnmatched;
-                    StatusMessage += " Computer knocked and gained " + std::to_string(PlayerHandUnmatched - ComputerHandUnmatched) + "points.";
+                    StatusMessage += " Computer knocked and gained " + std::to_string(PlayerHandUnmatched - ComputerHandUnmatched) + " points.";
                 }
                 else
                 {
@@ -342,7 +344,7 @@ std::string GinRummy::UserInput()
         }
         else
         {
-            StatusMessage = "Unable to gin, your unmatched meld is " + SumUnmatchedMeld(PlayerCards);
+            StatusMessage = "Unable to gin, your unmatched meld is " + std::to_string(SumUnmatchedMeld(PlayerCards));
         }
     }
     else
@@ -430,11 +432,13 @@ int GinRummy::FindUnmatchedMeld(std::vector<Card> &Hand, bool ResetMeld) const
     if(RunsThenSetsSum < SetsThenRunsSum)
     {
         Hand = RunsThenSets;
+        CalculateProbabilityOfMeld(Hand);
         return RunsThenSetsSum;
     }
     else
     {
         Hand = SetsThenRuns;
+        CalculateProbabilityOfMeld(Hand);
         return SetsThenRunsSum;
     }
 }
@@ -445,26 +449,33 @@ int GinRummy::FindUnmatchedMeld(std::vector<Card> &Hand, bool ResetMeld) const
 /// contents in Hand with those in PartnerHand as well. The function
 /// will reset the isMeld member on the Card class for the Hand vector
 /// but will not modify the PartnerHand vector (as this function relies
-/// on the fact that PartnerHand has already been melded. The contents
-/// of Hand won't be modified with the correct meld status.
+/// on the fact that PartnerHand has already been melded.
 ///
 /// Returns: int (the sum of the unmelded card's values in the Hand)
 //////////////////////////////////////////////////////////////////////
-int GinRummy::FindUnmatchedMeldWithPartner(const std::vector<Card> &Hand, const std::vector<Card> &PartnerHand) const
+int GinRummy::FindUnmatchedMeldWithPartner(std::vector<Card> &Hand, const std::vector<Card> &PartnerHand) const
 {
-    std::vector<Card> TempHand = Hand;
-    for(Card& C : TempHand)
-    {
+    std::vector<Card> PartnerMeld;
+    for(Card& C : Hand)
         C.meld = Card::NOTMELD;
-    }
 
-    for(Card C : PartnerHand)
+    for(const Card& C : PartnerHand)
     {
         if(C.isMeld())
-            TempHand.push_back(C);
+        {
+            PartnerMeld.push_back(C);
+            Hand.push_back(C);
+        }
     }
 
-    return FindUnmatchedMeld(TempHand, false);
+    FindUnmatchedMeld(Hand, false);
+
+    for(const Card& C : PartnerMeld)
+    {
+        //TODO Remove Card C from Hand
+    }
+
+    return SumUnmatchedMeld(Hand);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -538,15 +549,15 @@ void GinRummy::SearchForSets(std::vector<Card> &Hand) const
 ///
 /// Returns: bool (true is pickup discard, false is pickup face down)
 //////////////////////////////////////////////////////////////////////
-bool GinRummy::PickupDiscard(std::vector<Card>& Hand) const
+bool GinRummy::PickupDiscard(const std::vector<Card>& Hand) const
 {
     double ProbGinAsIs = ProbabilityOfGin(Hand);
     std::vector<Card> TempHand = Hand;
     TempHand.push_back(Discard.back());
-
+    FindUnmatchedMeld(TempHand);
     int idx = IndexToDiscard(TempHand);
     TempHand.erase(TempHand.begin() + idx);
-
+    FindUnmatchedMeld(TempHand);
     double ProbGinDiscard = ProbabilityOfGin(TempHand);
     if(ProbGinDiscard > ProbGinAsIs)
         return true;
@@ -561,15 +572,12 @@ bool GinRummy::PickupDiscard(std::vector<Card>& Hand) const
 ///
 /// Returns: int (index of the vector of the card to discard)
 //////////////////////////////////////////////////////////////////////
-int GinRummy::IndexToDiscard(std::vector<Card> &Hand) const
+int GinRummy::IndexToDiscard(const std::vector<Card> &Hand) const
 {
     // TODO This apporach can lead to a discarding of cards that will break
     // meld in a situation where all 11 cards are melded (i.e. gin with 11)
 
-    // 1. Compute probability of meld for each card
-    CalculateProbabilityOfMeld(Hand);
-
-    // 2. Discard the card with the lowest probability of meld
+    // Discard the card with the lowest probability of meld
     double MinProbability = Hand.at(0).probOfMeld;
     std::vector<int> MinProbIdxs = { 0 };
     for(int idx = 1; idx < Hand.size(); ++idx)
@@ -588,7 +596,7 @@ int GinRummy::IndexToDiscard(std::vector<Card> &Hand) const
     if(MinProbIdxs.size() == 1)
         return MinProbIdxs.at(0);
 
-    // 3. If there is a tie, discard the card with the highest value (i.e. Kings, Queens, etc)
+    // If there is a tie, discard the card with the highest value (i.e. Kings, Queens, etc)
     Card::Value MaxValue = Hand.at(MinProbIdxs.at(0)).value;
     int MaxValueIdx = MinProbIdxs.at(0);
     for(int idx = 1; idx < MinProbIdxs.size(); ++idx)
@@ -610,9 +618,9 @@ int GinRummy::IndexToDiscard(std::vector<Card> &Hand) const
 ///
 /// Returns: void
 //////////////////////////////////////////////////////////////////////
-bool GinRummy::Knock(std::vector<Card>& Hand) const
+bool GinRummy::Knock(const std::vector<Card>& Hand) const
 {
-    int UnmatchedMeldSum = FindUnmatchedMeld(Hand);
+    int UnmatchedMeldSum = SumUnmatchedMeld(Hand);
     if(UnmatchedMeldSum > 10)
         return false;
 
@@ -620,7 +628,7 @@ bool GinRummy::Knock(std::vector<Card>& Hand) const
     std::mt19937 gen(rd());
     std::geometric_distribution<int> d;
 
-    if(d(gen) < UnmatchedMeldSum)
+    if(d(gen) > UnmatchedMeldSum)
         return true;
     else
         return false;
@@ -631,9 +639,8 @@ bool GinRummy::Knock(std::vector<Card>& Hand) const
 ///
 /// Returns: double (probability of gin)
 //////////////////////////////////////////////////////////////////////
-double GinRummy::ProbabilityOfGin(std::vector<Card>& Hand) const
+double GinRummy::ProbabilityOfGin(const std::vector<Card>& Hand) const
 {
-    CalculateProbabilityOfMeld(Hand);
     double product = 1.0;
     for(int idx = 0; idx < Hand.size(); ++idx)
     {

@@ -73,6 +73,7 @@ TEST(FindUnmatchedMeldTestWithParnter, AddSetsToPartner)
     PartnerHand.push_back(Card(Card::CLUB, Card::KING));
     EXPECT_EQ(gr.FindUnmatchedMeld(PartnerHand), 0);
     EXPECT_EQ(gr.FindUnmatchedMeldWithPartner(Hand, PartnerHand), 6);
+    EXPECT_EQ(Hand.size(), 3);
 }
 
 TEST(FindUnmatchedMeldTestWithParnter, AddRunsToPartner)
@@ -88,6 +89,7 @@ TEST(FindUnmatchedMeldTestWithParnter, AddRunsToPartner)
     PartnerHand.push_back(Card(Card::DIAMOND, Card::KING));
     EXPECT_EQ(gr.FindUnmatchedMeld(PartnerHand), 0);
     EXPECT_EQ(gr.FindUnmatchedMeldWithPartner(Hand, PartnerHand), 12);
+    EXPECT_EQ(Hand.size(), 3);
 }
 
 TEST(FindUnmatchedMeldTestWithParnter, AddNothingToPartner)
@@ -103,6 +105,7 @@ TEST(FindUnmatchedMeldTestWithParnter, AddNothingToPartner)
     PartnerHand.push_back(Card(Card::DIAMOND, Card::KING));
     EXPECT_EQ(gr.FindUnmatchedMeld(PartnerHand), 0);
     EXPECT_EQ(gr.FindUnmatchedMeldWithPartner(Hand, PartnerHand), 22);
+    EXPECT_EQ(Hand.size(), 3);
 }
 
 TEST(FindUnmatchedMeldTestWithParnter, AddRunsAndSetsToPartner)
@@ -128,6 +131,7 @@ TEST(FindUnmatchedMeldTestWithParnter, AddRunsAndSetsToPartner)
 
     EXPECT_EQ(gr.FindUnmatchedMeld(PartnerHand), 2);
     EXPECT_EQ(gr.FindUnmatchedMeldWithPartner(Hand, PartnerHand), 4);
+    EXPECT_EQ(Hand.size(), 7);
 }
 
 TEST(SearchForRunsTest, SearchForRuns)

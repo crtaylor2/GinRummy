@@ -40,39 +40,42 @@ private:
     void PrintLine(const std::string& Left, const std::string& Middle, const std::string& Right) const;
 
     int SumUnmatchedMeld(const std::vector<Card>& Hand) const;
+    int FindUnmatchedMeld(std::vector<Card>& Hand, bool ResetMeld = true) const;
+    int FindUnmatchedMeldWithPartner(std::vector<Card>& Hand, const std::vector<Card> &PartnerHand) const;
+
+    void SearchForRuns(std::vector<Card>& Hand) const;
+    void SearchForSets(std::vector<Card>& Hand) const;
+
+    bool Knock(const std::vector<Card>& Hand) const;
+    bool PickupDiscard(const std::vector<Card>& Hand) const;
+    int IndexToDiscard(const std::vector<Card>& Hand) const;
+
+    void CalculateProbabilityOfMeld(std::vector<Card>& Hand) const; // TODO
+    double ProbabilityOfGin(const std::vector<Card>& Hand) const;
+
     FRIEND_TEST(SumUnmatchedMeldTest, EmptySum);
     FRIEND_TEST(SumUnmatchedMeldTest, AllNotMeldSum);
 
-    int FindUnmatchedMeld(std::vector<Card>& Hand, bool ResetMeld = true) const;
     FRIEND_TEST(FindUnmatchedMeldTest, SomeMeldFind);
     FRIEND_TEST(FindUnmatchedMeldTest, AllMeldFind);
     FRIEND_TEST(FindUnmatchedMeldTest, AllNotMeldFind);
     FRIEND_TEST(FindUnmatchedMeldTest, EmptyFind);
-
-    int FindUnmatchedMeldWithPartner(const std::vector<Card>& Hand, const std::vector<Card> &PartnerHand) const;
     FRIEND_TEST(FindUnmatchedMeldTestWithParnter, AddRunsAndSetsToPartner);
     FRIEND_TEST(FindUnmatchedMeldTestWithParnter, AddNothingToPartner);
     FRIEND_TEST(FindUnmatchedMeldTestWithParnter, AddRunsToPartner);
     FRIEND_TEST(FindUnmatchedMeldTestWithParnter, AddSetsToPartner);
 
-    void SearchForRuns(std::vector<Card>& Hand) const;
     FRIEND_TEST(SearchForRunsTest, SearchForRuns);
     FRIEND_TEST(SearchForRunsTest, SearchForRunsNoResetMeld);
 
-    void SearchForSets(std::vector<Card>& Hand) const;
     FRIEND_TEST(SearchForSetsTest, SearchForSets);
     FRIEND_TEST(SearchForSetsTest, SearchForSetsNoResetMeld);
 
-    bool Knock(std::vector<Card>& Hand) const;
-    bool PickupDiscard(std::vector<Card>& Hand) const;
-    int IndexToDiscard(std::vector<Card>& Hand) const;
     FRIEND_TEST(IndexToDiscardTest, IndexToDiscardTest);
 
-    void CalculateProbabilityOfMeld(std::vector<Card>& Hand) const; // TODO
     FRIEND_TEST(CalculateProbabilityOfMeldTest, AllMeldCardTest);
     FRIEND_TEST(CalculateProbabilityOfMeldTest, NoMeldCardTest);
 
-    double ProbabilityOfGin(std::vector<Card>& Hand) const;
     FRIEND_TEST(CalculateProbabilityOfGinTest, AllMeldGinTest);
     FRIEND_TEST(CalculateProbabilityOfGinTest, NoMeldGinTest);
 };
