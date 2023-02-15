@@ -472,7 +472,9 @@ int GinRummy::FindUnmatchedMeldWithPartner(std::vector<Card> &Hand, const std::v
 
     for(const Card& C : PartnerMeld)
     {
-        //TODO Remove Card C from Hand
+        std::vector<Card>::iterator iter = std::find(Hand.begin(), Hand.end(), C);
+        if(iter != std::end(Hand))
+            Hand.erase(iter);
     }
 
     return SumUnmatchedMeld(Hand);
