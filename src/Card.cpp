@@ -1,6 +1,7 @@
 #include "Card.h"
 
 #include <algorithm>
+#include <sstream>
 
 Card::Card(Suit s, Value v)
 {
@@ -8,6 +9,8 @@ Card::Card(Suit s, Value v)
     value = v;
     meld = NOTMELD;
     probOfMeld = 0.0;
+    OneFromMeld = 0;
+    TwoFromMeld = 0;
 }
 
 std::string Card::CardToString() const
@@ -80,7 +83,11 @@ std::string Card::CardToString() const
         std::transform(CardString.begin(), CardString.end(), CardString.begin(), ::toupper);
     }
 
-    return CardString;
+    std::ostringstream out;
+    out.precision(3);
+    out << std::fixed << probOfMeld;
+
+    return CardString + " (" + out.str() + ")";
 }
 
 bool Card::isMeld() const
@@ -139,4 +146,9 @@ bool Card::CompareForSets(Card Card1, Card Card2)
 bool Card::operator==(const Card& other) const
 {
     return suit == other.suit && value == other.value;
+}
+
+bool Card::operator!=(const Card& other) const
+{
+    return suit != other.suit || value != other.value;
 }

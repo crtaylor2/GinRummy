@@ -42,6 +42,8 @@ public:
     Value value;
     MeldStatus meld;
     double probOfMeld;
+    int OneFromMeld;
+    int TwoFromMeld;
 
     bool isMeld() const;
 
@@ -52,6 +54,7 @@ public:
     static bool CompareForRuns(Card Card1, Card Card2);
 
     bool operator==(const Card& other) const;
+    bool operator!=(const Card& other) const;
 };
 
 #endif // CARD_H

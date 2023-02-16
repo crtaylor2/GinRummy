@@ -659,11 +659,139 @@ double GinRummy::ProbabilityOfGin(const std::vector<Card>& Hand) const
 //////////////////////////////////////////////////////////////////////
 void GinRummy::CalculateProbabilityOfMeld(std::vector<Card>& Hand) const
 {
+    if(Hand.empty())
+        return;
+
+    for(Card& C : Hand)
+    {
+        C.OneFromMeld = 0;
+        C.TwoFromMeld = 0;
+    }
+
+    // Calculate for Sets First
+    std::sort(Hand.begin(), Hand.end(), Card::CompareForSets);
+
+    for(int idx = 0; idx < Hand.size() - 1; ++idx)
+    {
+        if(Hand.at(idx).isMeld())
+            continue;
+
+        //Check One From Meld
+        if(Hand.at(idx).value == Hand.at(idx + 1).value)
+        {
+            for(int s = Card::DIAMOND; s <= Card::SPADE; ++s)
+            {
+                Card CheckCard((Card::Suit)s, Hand.at(idx).value);
+                if(CheckCard != Hand.at(idx) && CheckCard !=  Hand.at(idx + 1))
+                {
+                    if(std::find(Discard.begin(), Discard.end(), CheckCard) == std::end(Discard))
+                    {
+                        ++(Hand.at(idx).OneFromMeld);
+                        ++(Hand.at(idx + 1).OneFromMeld);
+                    }
+                }
+            }
+        }
+    }
+
+    //Check Two From Meld
     for(int idx = 0; idx < Hand.size(); ++idx)
     {
         if(Hand.at(idx).isMeld())
-            Hand.at(idx).probOfMeld = 1.0;
+            continue;
+
+        for(int s1 = Card::DIAMOND; s1 <= Card::SPADE; ++s1)
+        {
+            if(s1 == Hand.at(idx).suit)
+                continue;
+
+            Card CheckCard1((Card::Suit)s1, Hand.at(idx).value);
+            if(std::find(Discard.begin(), Discard.end(), CheckCard1) != std::end(Discard))
+                continue;
+
+            for(int s2 = Card::DIAMOND; s2 <= Card::SPADE; ++s2)
+            {
+                if(s2 == Hand.at(idx).suit || s1 == s2)
+                    continue;
+
+                Card CheckCard2((Card::Suit)s2, Hand.at(idx).value);
+                if(std::find(Discard.begin(), Discard.end(), CheckCard2) == std::end(Discard))
+                {
+                    ++(Hand.at(idx).TwoFromMeld);
+                }
+            }
+        }
+    }
+
+// Calculate for Runs Second
+/*SortByRuns(Hand)
+
+For Each Card in Hand
+    If Card.isMeld
+        Skip Card
+
+    //Check One Meld
+    If ((Card.Suite == Card.Next.Suite) &&
+         (Card.Value == Card.Next.Value - 1) || // 6,7, example
+
+        // Check Left
+        CheckCard.Suite = Card.Suite
+        CheckCard.Value = Card.Value - 1
+        If IsValidCard(CheckCard) And CheckCard Not InDiscard
+        ++Card.OneFromMeld
+
+        // Check Right
+        CheckCard.Suite = Card.Suite
+        CheckCard.Value = Card.Value + 2
+        If IsValidCard(CheckCard) And CheckCard Not InDiscard
+        ++Card.OneFromMeld
+
+    Else If (Card.Suite == Card.Next.Suite &&
+         Card.Value == Card.Next.Value - 2) // 6,8, example
+        // Check Middle
+        CheckCard.Suite = Card.Suite
+        CheckCard.Value = Card.Value + 1
+        If CheckCard Not In Discard
+        ++Card.OneFromMeld
+
+//Check Two Away From Meld
+    Check1.Suite = Card.Suite
+    Check2.Suite = Card.Suite
+
+        //Check for two left
+        Check1.Value = Card.Value - 2
+        Check2.Value = Card.Value - 1
+        If(IsValid(Check1) && Check1 is Not In Discard &&
+               IsValid(Check2) && Check2 is Not In Discard)
+            ++Card.TwoFromMeld
+
+        //Check for two right
+        Check1.Value = Card.Value + 2
+        Check2.Value = Card.Value + 1
+        If(IsValid(Check1) && Check1 is Not In Discard &&
+               IsValid(Check2) && Check2 is Not In Discard)
+            ++Card.TwoFromMeld
+
+        //Check for one left, one right
+        Check1.Value = Card.Value + 1
+        Check2.Value = Card.Value - 1
+        If(IsValid(Check1) && Check1 is Not In Discard &&
+               IsValid(Check2) && Check2 is Not In Discard)
+            ++Card.TwoFromMeld
+
+*/
+    // Calculate Probability
+    for(Card& C : Hand)
+    {
+        if(C.isMeld())
+        {
+            C.probOfMeld = 1.0;
+        }
         else
-            Hand.at(idx).probOfMeld = 0.25;
+        {
+            C.probOfMeld = ((double)C.OneFromMeld / (double)Deck.size()) + std::pow((double)C.TwoFromMeld / (double)Deck.size(),2);
+            if(C.probOfMeld > 1.0)
+                C.probOfMeld = 0.99;
+        }
     }
 }
