@@ -671,12 +671,12 @@ void GinRummy::CalculateProbabilityOfMeld(std::vector<Card>& Hand) const
     // Calculate for Sets First
     std::sort(Hand.begin(), Hand.end(), Card::CompareForSets);
 
+    //Check One From Meld
     for(int idx = 0; idx < Hand.size() - 1; ++idx)
     {
         if(Hand.at(idx).isMeld())
             continue;
 
-        //Check One From Meld
         if(Hand.at(idx).value == Hand.at(idx + 1).value)
         {
             for(int s = Card::DIAMOND; s <= Card::SPADE; ++s)
