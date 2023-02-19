@@ -82,6 +82,7 @@ CTestTestfile.cmake
 src/CTestTestfile.cmake
 tests/CTestTestfile.cmake
 _deps/
-tests/GinRummyTest
+lib/tests/CardTest
+src/tests/GinRummyTest
 src/GinRummyExe
 
