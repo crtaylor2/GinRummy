@@ -1,0 +1,3 @@
+[submodule "Card"]
+	path = Card
+	url = git@github.com:crtaylor2/Card.git

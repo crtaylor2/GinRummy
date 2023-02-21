@@ -11,7 +11,7 @@ target_link_libraries(GTest::GTest INTERFACE gtest_main)
 
 add_executable(GinRummyTest GinRummyTest.cpp)
 
-target_include_directories(GinRummyTest PRIVATE ../../lib)
+target_include_directories(GinRummyTest PRIVATE ../../Card)
 
 target_link_libraries(GinRummyTest
  PRIVATE

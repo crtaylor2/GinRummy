@@ -728,6 +728,8 @@ void GinRummy::CalculateProbabilityOfMeld(std::vector<Card>& Hand) const
     //  - implements a contains function
     //  - implements a deal function
     //  - implements a SortBy{Sets,Runs} function
+    //  - implements a AllValues() function
+    //  - implements a AllSuits() function
     //  - move SearchFor{Sets,Runs} to Deck class
     //  - move Tests from SearchFor{Sets,Runs} to DeckTest file
     //  - typedef (or using x as y) Hand to Deck
