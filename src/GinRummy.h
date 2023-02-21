@@ -2,6 +2,7 @@
 #define GINRUMMY_H
 
 #include "Card.h"
+#include "Deck.h"
 
 #include <vector>
 #include <string>
@@ -16,12 +17,11 @@ public:
     void Play();
 
 private:
-    std::vector<Card> Deck;
+    Deck FaceDownDeck;
+    Deck DiscardDeck;
 
-    std::vector<Card> PlayerCards;
-    std::vector<Card> ComputerCards;
-
-    std::vector<Card> Discard;
+    Hand PlayerHand;
+    Hand ComputerHand;
 
     unsigned int PlayerScore;
     unsigned int ComputerScore;
@@ -39,19 +39,16 @@ private:
     void PrintLine(const std::string& Left, const std::string& Right) const;
     void PrintLine(const std::string& Left, const std::string& Middle, const std::string& Right) const;
 
-    int SumUnmatchedMeld(const std::vector<Card>& Hand) const;
-    int FindUnmatchedMeld(std::vector<Card>& Hand, bool ResetMeld = true) const;
-    int FindUnmatchedMeldWithPartner(std::vector<Card>& Hand, const std::vector<Card> &PartnerHand) const;
+    int SumUnmatchedMeld(const Hand& hand) const;
+    int FindUnmatchedMeld(Hand& hand, bool ResetMeld = true);
+    int FindUnmatchedMeldWithPartner(Hand& hand, const Hand &partner);
 
-    void SearchForRuns(std::vector<Card>& Hand) const;
-    void SearchForSets(std::vector<Card>& Hand) const;
+    bool Knock(const Hand& hand) const;
+    bool PickupDiscard(const Hand& hand);
+    int IndexToDiscard(const Hand& hand) const;
 
-    bool Knock(const std::vector<Card>& Hand) const;
-    bool PickupDiscard(const std::vector<Card>& Hand) const;
-    int IndexToDiscard(const std::vector<Card>& Hand) const;
-
-    void CalculateProbabilityOfMeld(std::vector<Card>& Hand) const; // TODO
-    double ProbabilityOfGin(const std::vector<Card>& Hand) const;
+    void CalculateProbabilityOfMeld(Hand& hand); // TODO
+    double ProbabilityOfGin(const Hand& hand) const;
 
     FRIEND_TEST(SumUnmatchedMeldTest, EmptySum);
     FRIEND_TEST(SumUnmatchedMeldTest, AllNotMeldSum);

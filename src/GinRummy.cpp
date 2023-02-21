@@ -25,39 +25,27 @@ GinRummy::GinRummy()
 //////////////////////////////////////////////////////////////////////
 void GinRummy::DealNewRound()
 {
-    Deck.clear();
-    PlayerCards.clear();
-    ComputerCards.clear();
-    Discard.clear();
+    FaceDownDeck.clear();
+    PlayerHand.clear();
+    ComputerHand.clear();
+    DiscardDeck.clear();
 
-    //Create 52 cards and place them in the Deck
-    for(int s = Card::DIAMOND; s <= Card::SPADE; ++s)
-    {
-        for(int n = Card::ACE; n <= Card::KING; ++n)
-        {
-            Card card((Card::Suit)s, (Card::Value)n);
-            Deck.push_back(card);
-        }
-    }
-
-    //Shuffle the Deck
-    std::random_device rd;
-    std::mt19937 g(rd());
-    std::shuffle(Deck.begin(), Deck.end(), g);
+    FaceDownDeck.createDeck();
+    FaceDownDeck.shuffle();
 
     //Deal each player 10 cards
     for(int d = 0; d < 10; ++d)
     {
-        PlayerCards.push_back(Deck.back());
-        Deck.pop_back();
+        PlayerHand.push_back(FaceDownDeck.back());
+        FaceDownDeck.pop_back();
 
-        ComputerCards.push_back(Deck.back());
-        Deck.pop_back();
+        ComputerHand.push_back(FaceDownDeck.back());
+        FaceDownDeck.pop_back();
     }
 
     //Turn over top card card place in the Discard pile
-    Discard.push_back(Deck.back());
-    Deck.pop_back();
+    DiscardDeck.push_back(FaceDownDeck.back());
+    FaceDownDeck.pop_back();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -100,47 +88,47 @@ void GinRummy::DrawGame(const std::string& StatusMessage)
 
     std::cout << std::endl; //4
 
-    FindUnmatchedMeld(PlayerCards);
-    FindUnmatchedMeld(ComputerCards);
+    FindUnmatchedMeld(PlayerHand);
+    FindUnmatchedMeld(ComputerHand);
 
-    for(Card& card : Discard)
+    for(Card& card : DiscardDeck)
         card.meld = Card::NOTMELD;
 
     if(SortByRuns)
     {
-        std::sort(PlayerCards.begin(), PlayerCards.end(), Card::CompareForRuns);
-        std::sort(ComputerCards.begin(), ComputerCards.end(), Card::CompareForRuns);
+        std::sort(PlayerHand.begin(), PlayerHand.end(), Card::CompareForRuns);
+        std::sort(ComputerHand.begin(), ComputerHand.end(), Card::CompareForRuns);
     }
     else
     {
-        std::sort(PlayerCards.begin(), PlayerCards.end(), Card::CompareForSets);
-        std::sort(ComputerCards.begin(), ComputerCards.end(), Card::CompareForSets);
+        std::sort(PlayerHand.begin(), PlayerHand.end(), Card::CompareForSets);
+        std::sort(ComputerHand.begin(), ComputerHand.end(), Card::CompareForSets);
     }
 
-    for(int idx = 0; idx < PlayerCards.size(); ++idx) //5-14, maybe 15
+    for(int idx = 0; idx < PlayerHand.size(); ++idx) //5-14, maybe 15
     {
-        std::string Left = std::to_string(idx+1) + ". " + PlayerCards.at(idx).CardToString();
+        std::string Left = std::to_string(idx+1) + ". " + PlayerHand.at(idx).CardToString();
         std::string Right;
         std::string Middle;
-        if(idx < ComputerCards.size())
+        if(idx < ComputerHand.size())
         {
             if(ShowComputerHand)
-                Right = std::to_string(idx+1) + ". " + ComputerCards.at(idx).CardToString();
+                Right = std::to_string(idx+1) + ". " + ComputerHand.at(idx).CardToString();
             else
                 Right = "Card " + std::to_string(idx+1);
         }
         if(idx == 1)
             Middle = "DISCARD PILE";
         else if(idx == 2)
-            Middle = !Discard.empty() ? Discard.back().CardToString() : "";
+            Middle = !DiscardDeck.empty() ? DiscardDeck.back().CardToString() : "";
         else if(idx == 5)
-            Middle = "(F) - Take Face Down (" + std::to_string(Deck.size()) + ")";
+            Middle = "(F) - Take Face Down (" + std::to_string(FaceDownDeck.size()) + ")";
         else if(idx == 6)
-            Middle = "(D) - Take Discard (" + std::to_string(Discard.size()) + ")";
+            Middle = "(D) - Take Discard (" + std::to_string(DiscardDeck.size()) + ")";
         PrintLine(Left, Middle, Right);
     }
 
-    if(PlayerCards.size() == 10) //15
+    if(PlayerHand.size() == 10) //15
         std::cout << std::endl;
 
     std::cout << std::endl; //16
@@ -200,11 +188,11 @@ std::string GinRummy::UserInput()
     }
     else if(Input == "D")
     {
-        if(PlayerTurn && PlayerCards.size() < 11 && !Discard.empty())
+        if(PlayerTurn && PlayerHand.size() < 11 && !DiscardDeck.empty())
         {
-            PlayerCards.push_back(Discard.back());
-            Discard.pop_back();
-            StatusMessage = "Chose " + PlayerCards.back().CardToString() + " from discard pile";
+            PlayerHand.push_back(DiscardDeck.back());
+            DiscardDeck.pop_back();
+            StatusMessage = "Chose " + PlayerHand.back().CardToString() + " from discard pile";
         }
         else
         {
@@ -213,11 +201,11 @@ std::string GinRummy::UserInput()
     }
     else if(Input == "F")
     {
-        if(PlayerTurn && PlayerCards.size() < 11 && !Deck.empty())
+        if(PlayerTurn && PlayerHand.size() < 11 && !FaceDownDeck.empty())
         {
-            PlayerCards.push_back(Deck.back());
-            Deck.pop_back();
-            StatusMessage = "Chose " + PlayerCards.back().CardToString() + " from face down pile";
+            PlayerHand.push_back(FaceDownDeck.back());
+            FaceDownDeck.pop_back();
+            StatusMessage = "Chose " + PlayerHand.back().CardToString() + " from face down pile";
         }
         else
         {
@@ -226,15 +214,15 @@ std::string GinRummy::UserInput()
     }
     else if(!Input.empty() && Input.at(0) == 'D')
     {
-        if(PlayerTurn && PlayerCards.size() > 10)
+        if(PlayerTurn && PlayerHand.size() > 10)
         {
             int idx = std::stoi(Input.substr(1)) - 1;
-            if(idx >= 0 && idx < PlayerCards.size())
+            if(idx >= 0 && idx < PlayerHand.size())
             {
-                Discard.push_back(PlayerCards.at(idx));
-                PlayerCards.at(idx) = PlayerCards.back();
-                PlayerCards.pop_back();
-                StatusMessage = "You discarded " + Discard.back().CardToString();
+                DiscardDeck.push_back(PlayerHand.at(idx));
+                PlayerHand.at(idx) = PlayerHand.back();
+                PlayerHand.pop_back();
+                StatusMessage = "You discarded " + DiscardDeck.back().CardToString();
                 PlayerTurn = false;
             }
             else
@@ -251,49 +239,49 @@ std::string GinRummy::UserInput()
     {
         if(!PlayerTurn)
         {
-            if(PickupDiscard(ComputerCards))
+            if(PickupDiscard(ComputerHand))
             {
-                ComputerCards.push_back(Discard.back());
-                Discard.pop_back();
-                StatusMessage = "Computer chose " + ComputerCards.back().CardToString() + " from discards";
+                ComputerHand.push_back(DiscardDeck.back());
+                DiscardDeck.pop_back();
+                StatusMessage = "Computer chose " + ComputerHand.back().CardToString() + " from discards";
             }
             else
             {
-                ComputerCards.push_back(Deck.back());
-                Deck.pop_back();
+                ComputerHand.push_back(FaceDownDeck.back());
+                FaceDownDeck.pop_back();
                 StatusMessage = "Computer chose from the deck";
             }
 
-            FindUnmatchedMeld(ComputerCards);
+            FindUnmatchedMeld(ComputerHand);
 
-            int idx = IndexToDiscard(ComputerCards);
-            Discard.push_back(ComputerCards.at(idx));
-            StatusMessage += " and discarded " + Discard.back().CardToString();
-            ComputerCards.erase(ComputerCards.begin() + idx);
+            int idx = IndexToDiscard(ComputerHand);
+            DiscardDeck.push_back(ComputerHand.at(idx));
+            StatusMessage += " and discarded " + DiscardDeck.back().CardToString();
+            ComputerHand.erase(ComputerHand.begin() + idx);
 
-            FindUnmatchedMeld(ComputerCards);
+            FindUnmatchedMeld(ComputerHand);
 
-            if(ComputerCards.size() < 11 && SumUnmatchedMeld(ComputerCards) == 0)
+            if(ComputerHand.size() < 11 && SumUnmatchedMeld(ComputerHand) == 0)
             {
-                int PlayerHandUnmatched = FindUnmatchedMeldWithPartner(PlayerCards, ComputerCards);
-                ComputerScore += PlayerHandUnmatched + 20;
+                int handUnmatched = FindUnmatchedMeldWithPartner(PlayerHand, ComputerHand);
+                ComputerScore += handUnmatched + 20;
                 DealNewRound();
-                StatusMessage += " Computer ginned and gained " + std::to_string(PlayerHandUnmatched + 20) + " points. Try again.";
+                StatusMessage += " Computer ginned and gained " + std::to_string(handUnmatched + 20) + " points. Try again.";
             }
-            else if(Knock(ComputerCards))
+            else if(Knock(ComputerHand))
             {
-                int ComputerHandUnmatched = SumUnmatchedMeld(ComputerCards);
-                int PlayerHandUnmatched = FindUnmatchedMeldWithPartner(PlayerCards, ComputerCards);
+                int ComputerHandUnmatched = SumUnmatchedMeld(ComputerHand);
+                int handUnmatched = FindUnmatchedMeldWithPartner(PlayerHand, ComputerHand);
 
-                if(ComputerHandUnmatched < PlayerHandUnmatched)
+                if(ComputerHandUnmatched < handUnmatched)
                 {
-                    ComputerScore += PlayerHandUnmatched - ComputerHandUnmatched;
-                    StatusMessage += " Computer knocked and gained " + std::to_string(PlayerHandUnmatched - ComputerHandUnmatched) + " points.";
+                    ComputerScore += handUnmatched - ComputerHandUnmatched;
+                    StatusMessage += " Computer knocked and gained " + std::to_string(handUnmatched - ComputerHandUnmatched) + " points.";
                 }
                 else
                 {
-                    PlayerScore += ComputerHandUnmatched - PlayerHandUnmatched + 10;
-                    StatusMessage += " Computer knocked and lost. You gained " + std::to_string(ComputerHandUnmatched - PlayerHandUnmatched + 10) + " points.";
+                    PlayerScore += ComputerHandUnmatched - handUnmatched + 10;
+                    StatusMessage += " Computer knocked and lost. You gained " + std::to_string(ComputerHandUnmatched - handUnmatched + 10) + " points.";
                 }
                 DealNewRound();
             }
@@ -306,21 +294,21 @@ std::string GinRummy::UserInput()
     }
     else if(Input == "K")
     {
-        if(PlayerCards.size() < 11 && SumUnmatchedMeld(PlayerCards) < 11)
+        if(PlayerHand.size() < 11 && SumUnmatchedMeld(PlayerHand) < 11)
         {
-            int PlayerHandUnmatched = SumUnmatchedMeld(PlayerCards);
-            int ComputerHandUnmatched = FindUnmatchedMeldWithPartner(ComputerCards, PlayerCards);
+            int handUnmatched = SumUnmatchedMeld(PlayerHand);
+            int ComputerHandUnmatched = FindUnmatchedMeldWithPartner(ComputerHand, PlayerHand);
 
-            if(PlayerHandUnmatched < ComputerHandUnmatched)
+            if(handUnmatched < ComputerHandUnmatched)
             {
-                PlayerScore += ComputerHandUnmatched - PlayerHandUnmatched;
-                StatusMessage = "CONGRATULATIONS! You knocked with " + std::to_string(PlayerHandUnmatched) +
+                PlayerScore += ComputerHandUnmatched - handUnmatched;
+                StatusMessage = "CONGRATULATIONS! You knocked with " + std::to_string(handUnmatched) +
                         " points. The computer had " + std::to_string(ComputerHandUnmatched) + " points.";
             }
             else
             {
-                ComputerScore += PlayerHandUnmatched - ComputerHandUnmatched + 10;
-                StatusMessage = "GOOD TRY! You knocked with " + std::to_string(PlayerHandUnmatched) +
+                ComputerScore += handUnmatched - ComputerHandUnmatched + 10;
+                StatusMessage = "GOOD TRY! You knocked with " + std::to_string(handUnmatched) +
                         " points. The computer had " + std::to_string(ComputerHandUnmatched) + " points.";
             }
 
@@ -333,9 +321,9 @@ std::string GinRummy::UserInput()
     }
     else if(Input == "G")
     {
-        if(PlayerCards.size() < 11 && SumUnmatchedMeld(PlayerCards) == 0)
+        if(PlayerHand.size() < 11 && SumUnmatchedMeld(PlayerHand) == 0)
         {
-            int ComputerHandUnmatched = FindUnmatchedMeldWithPartner(ComputerCards, PlayerCards);
+            int ComputerHandUnmatched = FindUnmatchedMeldWithPartner(ComputerHand, PlayerHand);
             PlayerScore += ComputerHandUnmatched + 20;
 
             DealNewRound();
@@ -344,7 +332,7 @@ std::string GinRummy::UserInput()
         }
         else
         {
-            StatusMessage = "Unable to gin, your unmatched meld is " + std::to_string(SumUnmatchedMeld(PlayerCards));
+            StatusMessage = "Unable to gin, your unmatched meld is " + std::to_string(SumUnmatchedMeld(PlayerHand));
         }
     }
     else
@@ -408,37 +396,37 @@ void GinRummy::PrintLine(const std::string& Left, const std::string& Middle, con
 ///
 /// Returns: int (the sum of the unmelded card's values in the Hand)
 //////////////////////////////////////////////////////////////////////
-int GinRummy::FindUnmatchedMeld(std::vector<Card> &Hand, bool ResetMeld) const
+int GinRummy::FindUnmatchedMeld(Hand& hand, bool ResetMeld)
 {
     if(ResetMeld)
-        for(Card& card : Hand)
+        for(Card& card : hand)
             card.meld = Card::NOTMELD;
 
-    std::vector<Card> RunsThenSets = Hand;
-    std::vector<Card> SetsThenRuns = Hand;
+    Hand RunsThenSets = hand;
+    Hand SetsThenRuns = hand;
     int RunsThenSetsSum;
     int SetsThenRunsSum;
 
     // Attempt 1 - runs then sets
-    SearchForRuns(RunsThenSets);
-    SearchForSets(RunsThenSets);
+    RunsThenSets.searchForRuns();
+    RunsThenSets.searchForSets();
     RunsThenSetsSum = SumUnmatchedMeld(RunsThenSets);
 
     // Attempt 2 - sets thenn runs
-    SearchForSets(SetsThenRuns);
-    SearchForRuns(SetsThenRuns);
+    SetsThenRuns.searchForSets();
+    SetsThenRuns.searchForRuns();
     SetsThenRunsSum = SumUnmatchedMeld(SetsThenRuns);
 
     if(RunsThenSetsSum < SetsThenRunsSum)
     {
-        Hand = RunsThenSets;
-        CalculateProbabilityOfMeld(Hand);
+        hand = RunsThenSets;
+        CalculateProbabilityOfMeld(hand);
         return RunsThenSetsSum;
     }
     else
     {
-        Hand = SetsThenRuns;
-        CalculateProbabilityOfMeld(Hand);
+        hand = SetsThenRuns;
+        CalculateProbabilityOfMeld(hand);
         return SetsThenRunsSum;
     }
 }
@@ -453,10 +441,10 @@ int GinRummy::FindUnmatchedMeld(std::vector<Card> &Hand, bool ResetMeld) const
 ///
 /// Returns: int (the sum of the unmelded card's values in the Hand)
 //////////////////////////////////////////////////////////////////////
-int GinRummy::FindUnmatchedMeldWithPartner(std::vector<Card> &Hand, const std::vector<Card> &PartnerHand) const
+int GinRummy::FindUnmatchedMeldWithPartner(Hand& hand, const Hand &PartnerHand)
 {
-    std::vector<Card> PartnerMeld;
-    for(Card& C : Hand)
+    Hand PartnerMeld;
+    for(Card& C : hand)
         C.meld = Card::NOTMELD;
 
     for(const Card& C : PartnerHand)
@@ -464,20 +452,16 @@ int GinRummy::FindUnmatchedMeldWithPartner(std::vector<Card> &Hand, const std::v
         if(C.isMeld())
         {
             PartnerMeld.push_back(C);
-            Hand.push_back(C);
+            hand.push_back(C);
         }
     }
 
-    FindUnmatchedMeld(Hand, false);
+    FindUnmatchedMeld(hand, false);
 
     for(const Card& C : PartnerMeld)
-    {
-        std::vector<Card>::iterator iter = std::find(Hand.begin(), Hand.end(), C);
-        if(iter != std::end(Hand))
-            Hand.erase(iter);
-    }
+        hand.remove(C);
 
-    return SumUnmatchedMeld(Hand);
+    return SumUnmatchedMeld(hand);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -487,61 +471,14 @@ int GinRummy::FindUnmatchedMeldWithPartner(std::vector<Card> &Hand, const std::v
 ///
 /// Returns: int (the sum of the unmelded card's values in the Hand)
 //////////////////////////////////////////////////////////////////////
-int GinRummy::SumUnmatchedMeld(const std::vector<Card> &Hand) const
+int GinRummy::SumUnmatchedMeld(const Hand& hand) const
 {
     int Count = 0;
-    for(const Card& card : Hand)
+    for(const Card& card : hand)
         if(!card.isMeld())
             Count = Count + card.CardPoints();
 
     return Count;
-}
-
-//////////////////////////////////////////////////////////////////////
-/// Loops through a Hand of cards and identifies runs of three or more
-/// cards of the same suit.
-///
-/// Returns: void
-//////////////////////////////////////////////////////////////////////
-void GinRummy::SearchForRuns(std::vector<Card> &Hand) const
-{
-    std::sort(Hand.begin(), Hand.end(), Card::CompareForRuns);
-    for(int idx = 2; idx < Hand.size(); ++idx)
-    {
-        if((Hand.at(idx).suit == Hand.at(idx - 1).suit && Hand.at(idx - 1).suit == Hand.at(idx - 2).suit) &&
-           (Hand.at(idx).value == (Hand.at(idx - 1).value + 1) && (Hand.at(idx - 1).value + 1) == (Hand.at(idx - 2).value + 2)) )
-        {
-            if(Hand.at(idx).meld != Card::SETMELD && Hand.at(idx - 1).meld != Card::SETMELD && Hand.at(idx - 2).meld != Card::SETMELD)
-            {
-                Hand.at(idx).meld = Card::RUNMELD;
-                Hand.at(idx - 1).meld = Card::RUNMELD;
-                Hand.at(idx - 2).meld = Card::RUNMELD;
-            }
-        }
-    }
-}
-
-//////////////////////////////////////////////////////////////////////
-/// Loops through a Hand of cards and identifies sets of three or more
-/// cards with the same value
-///
-/// Returns: void
-//////////////////////////////////////////////////////////////////////
-void GinRummy::SearchForSets(std::vector<Card> &Hand) const
-{
-    std::sort(Hand.begin(), Hand.end(), Card::CompareForSets);
-    for(int idx = 2; idx < Hand.size(); ++idx)
-    {
-        if(Hand.at(idx).value == Hand.at(idx - 1).value && Hand.at(idx - 1).value == Hand.at(idx - 2).value)
-        {
-            if(Hand.at(idx).meld != Card::RUNMELD && Hand.at(idx - 1).meld != Card::RUNMELD && Hand.at(idx - 2).meld != Card::RUNMELD)
-            {
-                Hand.at(idx).meld = Card::SETMELD;
-                Hand.at(idx - 1).meld = Card::SETMELD;
-                Hand.at(idx - 2).meld = Card::SETMELD;
-            }
-        }
-    }
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -551,17 +488,17 @@ void GinRummy::SearchForSets(std::vector<Card> &Hand) const
 ///
 /// Returns: bool (true is pickup discard, false is pickup face down)
 //////////////////////////////////////////////////////////////////////
-bool GinRummy::PickupDiscard(const std::vector<Card>& Hand) const
+bool GinRummy::PickupDiscard(const Hand& hand)
 {
-    double ProbGinAsIs = ProbabilityOfGin(Hand);
-    std::vector<Card> TempHand = Hand;
-    TempHand.push_back(Discard.back());
+    double ProbGinAsIs = ProbabilityOfGin(hand);
+    Hand TempHand = hand;
+    TempHand.push_back(DiscardDeck.back());
     FindUnmatchedMeld(TempHand);
     int idx = IndexToDiscard(TempHand);
     TempHand.erase(TempHand.begin() + idx);
     FindUnmatchedMeld(TempHand);
-    double ProbGinDiscard = ProbabilityOfGin(TempHand);
-    if(ProbGinDiscard > ProbGinAsIs)
+    double ProbGinDiscardDeck = ProbabilityOfGin(TempHand);
+    if(ProbGinDiscardDeck > ProbGinAsIs)
         return true;
     else
         return false;
@@ -574,23 +511,23 @@ bool GinRummy::PickupDiscard(const std::vector<Card>& Hand) const
 ///
 /// Returns: int (index of the vector of the card to discard)
 //////////////////////////////////////////////////////////////////////
-int GinRummy::IndexToDiscard(const std::vector<Card> &Hand) const
+int GinRummy::IndexToDiscard(const Hand& hand) const
 {
     // TODO This apporach can lead to a discarding of cards that will break
     // meld in a situation where all 11 cards are melded (i.e. gin with 11)
 
     // Discard the card with the lowest probability of meld
-    double MinProbability = Hand.at(0).probOfMeld;
+    double MinProbability = hand.at(0).probOfMeld;
     std::vector<int> MinProbIdxs = { 0 };
-    for(int idx = 1; idx < Hand.size(); ++idx)
+    for(int idx = 1; idx < hand.size(); ++idx)
     {
-        if(Hand.at(idx).probOfMeld < MinProbability)
+        if(hand.at(idx).probOfMeld < MinProbability)
         {
-            MinProbability = Hand.at(idx).probOfMeld;
+            MinProbability = hand.at(idx).probOfMeld;
             MinProbIdxs.clear();
             MinProbIdxs.push_back(idx);
         }
-        else if(Hand.at(idx).probOfMeld == MinProbability)
+        else if(hand.at(idx).probOfMeld == MinProbability)
         {
             MinProbIdxs.push_back(idx);
         }
@@ -599,13 +536,13 @@ int GinRummy::IndexToDiscard(const std::vector<Card> &Hand) const
         return MinProbIdxs.at(0);
 
     // If there is a tie, discard the card with the highest value (i.e. Kings, Queens, etc)
-    Card::Value MaxValue = Hand.at(MinProbIdxs.at(0)).value;
+    Card::Value MaxValue = hand.at(MinProbIdxs.at(0)).value;
     int MaxValueIdx = MinProbIdxs.at(0);
     for(int idx = 1; idx < MinProbIdxs.size(); ++idx)
     {
-        if(Hand.at(MinProbIdxs.at(idx)).value > MaxValue)
+        if(hand.at(MinProbIdxs.at(idx)).value > MaxValue)
         {
-            MaxValue = Hand.at(MinProbIdxs.at(idx)).value;
+            MaxValue = hand.at(MinProbIdxs.at(idx)).value;
             MaxValueIdx = MinProbIdxs.at(idx);
         }
     }
@@ -620,9 +557,9 @@ int GinRummy::IndexToDiscard(const std::vector<Card> &Hand) const
 ///
 /// Returns: void
 //////////////////////////////////////////////////////////////////////
-bool GinRummy::Knock(const std::vector<Card>& Hand) const
+bool GinRummy::Knock(const Hand& hand) const
 {
-    int UnmatchedMeldSum = SumUnmatchedMeld(Hand);
+    int UnmatchedMeldSum = SumUnmatchedMeld(hand);
     if(UnmatchedMeldSum > 10)
         return false;
 
@@ -641,12 +578,12 @@ bool GinRummy::Knock(const std::vector<Card>& Hand) const
 ///
 /// Returns: double (probability of gin)
 //////////////////////////////////////////////////////////////////////
-double GinRummy::ProbabilityOfGin(const std::vector<Card>& Hand) const
+double GinRummy::ProbabilityOfGin(const Hand& hand) const
 {
     double product = 1.0;
-    for(int idx = 0; idx < Hand.size(); ++idx)
+    for(int idx = 0; idx < hand.size(); ++idx)
     {
-        product *= Hand.at(idx).probOfMeld;
+        product *= hand.at(idx).probOfMeld;
     }
     return product;
 }
@@ -657,37 +594,37 @@ double GinRummy::ProbabilityOfGin(const std::vector<Card>& Hand) const
 ///
 /// Returns: void
 //////////////////////////////////////////////////////////////////////
-void GinRummy::CalculateProbabilityOfMeld(std::vector<Card>& Hand) const
+void GinRummy::CalculateProbabilityOfMeld(Hand& hand)
 {
-    if(Hand.empty())
+    if(hand.empty())
         return;
 
-    for(Card& C : Hand)
+    for(Card& C : hand)
     {
         C.OneFromMeld = 0;
         C.TwoFromMeld = 0;
     }
 
     // Calculate for Sets First
-    std::sort(Hand.begin(), Hand.end(), Card::CompareForSets);
+    std::sort(hand.begin(), hand.end(), Card::CompareForSets);
 
     //Check One From Meld
-    for(int idx = 0; idx < Hand.size() - 1; ++idx)
+    for(int idx = 0; idx < hand.size() - 1; ++idx)
     {
-        if(Hand.at(idx).isMeld())
+        if(hand.at(idx).isMeld())
             continue;
 
-        if(Hand.at(idx).value == Hand.at(idx + 1).value)
+        if(hand.at(idx).value == hand.at(idx + 1).value)
         {
             for(int s = Card::DIAMOND; s <= Card::SPADE; ++s)
             {
-                Card CheckCard((Card::Suit)s, Hand.at(idx).value);
-                if(CheckCard != Hand.at(idx) && CheckCard !=  Hand.at(idx + 1))
+                Card CheckCard((Card::Suit)s, hand.at(idx).value);
+                if(CheckCard != hand.at(idx) && CheckCard !=  hand.at(idx + 1))
                 {
-                    if(std::find(Discard.begin(), Discard.end(), CheckCard) == std::end(Discard))
+                    if(!DiscardDeck.contains(CheckCard))
                     {
-                        ++(Hand.at(idx).OneFromMeld);
-                        ++(Hand.at(idx + 1).OneFromMeld);
+                        ++(hand.at(idx).OneFromMeld);
+                        ++(hand.at(idx + 1).OneFromMeld);
                     }
                 }
             }
@@ -695,44 +632,33 @@ void GinRummy::CalculateProbabilityOfMeld(std::vector<Card>& Hand) const
     }
 
     //Check Two From Meld
-    for(int idx = 0; idx < Hand.size(); ++idx)
+    for(int idx = 0; idx < hand.size(); ++idx)
     {
-        if(Hand.at(idx).isMeld())
+        if(hand.at(idx).isMeld())
             continue;
 
         for(int s1 = Card::DIAMOND; s1 <= Card::SPADE; ++s1)
         {
-            if(s1 == Hand.at(idx).suit)
+            if(s1 == hand.at(idx).suit)
                 continue;
 
-            Card CheckCard1((Card::Suit)s1, Hand.at(idx).value);
-            if(std::find(Discard.begin(), Discard.end(), CheckCard1) != std::end(Discard))
+            Card CheckCard1((Card::Suit)s1, hand.at(idx).value);
+            if(DiscardDeck.contains(CheckCard1))
                 continue;
 
             for(int s2 = Card::DIAMOND; s2 <= Card::SPADE; ++s2)
             {
-                if(s2 == Hand.at(idx).suit || s1 == s2)
+                if(s2 == hand.at(idx).suit || s1 == s2)
                     continue;
 
-                Card CheckCard2((Card::Suit)s2, Hand.at(idx).value);
-                if(std::find(Discard.begin(), Discard.end(), CheckCard2) == std::end(Discard))
+                Card CheckCard2((Card::Suit)s2, hand.at(idx).value);
+                if(!DiscardDeck.contains(CheckCard2))
                 {
-                    ++(Hand.at(idx).TwoFromMeld);
+                    ++(hand.at(idx).TwoFromMeld);
                 }
             }
         }
     }
-
-    // TODO: Make Deck class that
-    //  - extends std::vector<Card>
-    //  - implements a contains function
-    //  - implements a deal function
-    //  - implements a SortBy{Sets,Runs} function
-    //  - implements a AllValues() function
-    //  - implements a AllSuits() function
-    //  - move SearchFor{Sets,Runs} to Deck class
-    //  - move Tests from SearchFor{Sets,Runs} to DeckTest file
-    //  - typedef (or using x as y) Hand to Deck
 
 // Calculate for Runs Second
 /*SortByRuns(Hand)
@@ -748,13 +674,13 @@ For Each Card in Hand
         // Check Left
         CheckCard.Suite = Card.Suite
         CheckCard.Value = Card.Value - 1
-        If IsValidCard(CheckCard) And CheckCard Not InDiscard
+        If IsValidCard(CheckCard) And CheckCard Not InDiscardDeck
         ++Card.OneFromMeld
 
         // Check Right
         CheckCard.Suite = Card.Suite
         CheckCard.Value = Card.Value + 2
-        If IsValidCard(CheckCard) And CheckCard Not InDiscard
+        If IsValidCard(CheckCard) And CheckCard Not InDiscardDeck
         ++Card.OneFromMeld
 
     Else If (Card.Suite == Card.Next.Suite &&
@@ -762,7 +688,7 @@ For Each Card in Hand
         // Check Middle
         CheckCard.Suite = Card.Suite
         CheckCard.Value = Card.Value + 1
-        If CheckCard Not In Discard
+        If CheckCard Not In DiscardDeck
         ++Card.OneFromMeld
 
 //Check Two Away From Meld
@@ -772,27 +698,27 @@ For Each Card in Hand
         //Check for two left
         Check1.Value = Card.Value - 2
         Check2.Value = Card.Value - 1
-        If(IsValid(Check1) && Check1 is Not In Discard &&
-               IsValid(Check2) && Check2 is Not In Discard)
+        If(IsValid(Check1) && Check1 is Not In DiscardDeck &&
+               IsValid(Check2) && Check2 is Not In DiscardDeck)
             ++Card.TwoFromMeld
 
         //Check for two right
         Check1.Value = Card.Value + 2
         Check2.Value = Card.Value + 1
-        If(IsValid(Check1) && Check1 is Not In Discard &&
-               IsValid(Check2) && Check2 is Not In Discard)
+        If(IsValid(Check1) && Check1 is Not In DiscardDeck &&
+               IsValid(Check2) && Check2 is Not In DiscardDeck)
             ++Card.TwoFromMeld
 
         //Check for one left, one right
         Check1.Value = Card.Value + 1
         Check2.Value = Card.Value - 1
-        If(IsValid(Check1) && Check1 is Not In Discard &&
-               IsValid(Check2) && Check2 is Not In Discard)
+        If(IsValid(Check1) && Check1 is Not In DiscardDeck &&
+               IsValid(Check2) && Check2 is Not In DiscardDeck)
             ++Card.TwoFromMeld
 
 */
     // Calculate Probability
-    for(Card& C : Hand)
+    for(Card& C : hand)
     {
         if(C.isMeld())
         {
@@ -800,7 +726,7 @@ For Each Card in Hand
         }
         else
         {
-            C.probOfMeld = ((double)C.OneFromMeld / (double)Deck.size()) + std::pow((double)C.TwoFromMeld / (double)Deck.size(),2);
+            C.probOfMeld = ((double)C.OneFromMeld / (double)FaceDownDeck.size()) + std::pow((double)C.TwoFromMeld / (double)FaceDownDeck.size(),2);
             if(C.probOfMeld > 1.0)
                 C.probOfMeld = 0.99;
         }
