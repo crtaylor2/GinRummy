@@ -495,6 +495,11 @@ bool GinRummy::PickupDiscard(const Hand& hand)
     TempHand.push_back(DiscardDeck.back());
     FindUnmatchedMeld(TempHand);
     int idx = IndexToDiscard(TempHand);
+    if(TempHand.at(idx) == DiscardDeck.back())
+    {
+        // TODO: Why is this necessary?
+        return false;
+    }
     TempHand.erase(TempHand.begin() + idx);
     FindUnmatchedMeld(TempHand);
     double ProbGinDiscardDeck = ProbabilityOfGin(TempHand);
@@ -608,7 +613,7 @@ void GinRummy::CalculateProbabilityOfMeld(Hand& hand)
     // Calculate for Sets First
     hand.sortBySets();
 
-    //Check One From Meld
+    //Check One From Meld - Sets
     for(int idx = 0; idx < hand.size() - 1; ++idx)
     {
         if(hand.at(idx).isMeld())
@@ -631,7 +636,7 @@ void GinRummy::CalculateProbabilityOfMeld(Hand& hand)
         }
     }
 
-    //Check Two From Meld
+    //Check Two From Meld - Sets
     for(int idx = 0; idx < hand.size(); ++idx)
     {
         if(hand.at(idx).isMeld())
@@ -663,12 +668,12 @@ void GinRummy::CalculateProbabilityOfMeld(Hand& hand)
     // Calculate for Runs Second
     hand.sortByRuns();
 
+    //Check One From Meld - Runs
     for(int idx = 0; idx < hand.size() - 1; ++idx)
     {
         if(hand.at(idx).isMeld())
             continue;
 
-        //Check One away from Meld
         if(hand.at(idx).suit == hand.at(idx + 1).suit && hand.at(idx).value == hand.at(idx + 1).value - 1)//6,7 example
         {
             // Check Left
@@ -698,37 +703,34 @@ void GinRummy::CalculateProbabilityOfMeld(Hand& hand)
         }
     }
 
+    //Check Two From Meld - Runs
+    for(int idx = 0; idx < hand.size(); ++idx)
+    {
+        if(hand.at(idx).isMeld())
+            continue;
 
-/*For Each Card in Hand
-    If Card.isMeld
-        Skip Card
+        Card CheckCardL1(hand.at(idx).suit, Card::Value(hand.at(idx).value - 1));
+        Card CheckCardL2(hand.at(idx).suit, Card::Value(hand.at(idx).value - 2));
 
-//Check Two Away From Meld
-    Check1.Suite = Card.Suite
-    Check2.Suite = Card.Suite
+        Card CheckCardR1(hand.at(idx).suit, Card::Value(hand.at(idx).value + 1));
+        Card CheckCardR2(hand.at(idx).suit, Card::Value(hand.at(idx).value + 2));
 
         //Check for two left
-        Check1.Value = Card.Value - 2
-        Check2.Value = Card.Value - 1
-        If(IsValid(Check1) && Check1 is Not In DiscardDeck &&
-               IsValid(Check2) && Check2 is Not In DiscardDeck)
-            ++Card.TwoFromMeld
+        if(CheckCardL1.isValid() && !DiscardDeck.contains(CheckCardL1) &&
+                CheckCardL2.isValid() && !DiscardDeck.contains(CheckCardL2))
+            ++(hand.at(idx).TwoFromMeld);
 
         //Check for two right
-        Check1.Value = Card.Value + 2
-        Check2.Value = Card.Value + 1
-        If(IsValid(Check1) && Check1 is Not In DiscardDeck &&
-               IsValid(Check2) && Check2 is Not In DiscardDeck)
-            ++Card.TwoFromMeld
+        if(CheckCardR1.isValid() && !DiscardDeck.contains(CheckCardR1) &&
+                CheckCardR2.isValid() && !DiscardDeck.contains(CheckCardR2))
+            ++(hand.at(idx).TwoFromMeld);
 
-        //Check for one left, one right
-        Check1.Value = Card.Value + 1
-        Check2.Value = Card.Value - 1
-        If(IsValid(Check1) && Check1 is Not In DiscardDeck &&
-               IsValid(Check2) && Check2 is Not In DiscardDeck)
-            ++Card.TwoFromMeld
+        //Check for one on both sides
+        if(CheckCardL1.isValid() && !DiscardDeck.contains(CheckCardL1) &&
+                CheckCardR1.isValid() && !DiscardDeck.contains(CheckCardR1))
+            ++(hand.at(idx).TwoFromMeld);
+    }
 
-*/
     // Calculate Probability
     for(Card& C : hand)
     {
