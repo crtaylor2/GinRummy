@@ -96,13 +96,13 @@ void GinRummy::DrawGame(const std::string& StatusMessage)
 
     if(SortByRuns)
     {
-        std::sort(PlayerHand.begin(), PlayerHand.end(), Card::CompareForRuns);
-        std::sort(ComputerHand.begin(), ComputerHand.end(), Card::CompareForRuns);
+        PlayerHand.sortByRuns();
+        ComputerHand.sortByRuns();
     }
     else
     {
-        std::sort(PlayerHand.begin(), PlayerHand.end(), Card::CompareForSets);
-        std::sort(ComputerHand.begin(), ComputerHand.end(), Card::CompareForSets);
+        PlayerHand.sortBySets();
+        ComputerHand.sortBySets();
     }
 
     for(int idx = 0; idx < PlayerHand.size(); ++idx) //5-14, maybe 15
@@ -606,7 +606,7 @@ void GinRummy::CalculateProbabilityOfMeld(Hand& hand)
     }
 
     // Calculate for Sets First
-    std::sort(hand.begin(), hand.end(), Card::CompareForSets);
+    hand.sortBySets();
 
     //Check One From Meld
     for(int idx = 0; idx < hand.size() - 1; ++idx)
@@ -660,36 +660,48 @@ void GinRummy::CalculateProbabilityOfMeld(Hand& hand)
         }
     }
 
-// Calculate for Runs Second
-/*SortByRuns(Hand)
+    // Calculate for Runs Second
+    hand.sortByRuns();
 
-For Each Card in Hand
+    for(int idx = 0; idx < hand.size() - 1; ++idx)
+    {
+        if(hand.at(idx).isMeld())
+            continue;
+
+        //Check One away from Meld
+        if(hand.at(idx).suit == hand.at(idx + 1).suit && hand.at(idx).value == hand.at(idx + 1).value - 1)//6,7 example
+        {
+            // Check Left
+            Card CheckCard1(hand.at(idx).suit, Card::Value(hand.at(idx).value - 1));
+            if(CheckCard1.isValid() && !DiscardDeck.contains(CheckCard1))
+            {
+                ++(hand.at(idx).OneFromMeld);
+                ++(hand.at(idx + 1).OneFromMeld);
+            }
+
+            // Check Right
+            Card CheckCard2(hand.at(idx).suit, Card::Value(hand.at(idx).value + 2));
+            if(CheckCard2.isValid() && !DiscardDeck.contains(CheckCard2))
+            {
+                ++(hand.at(idx).OneFromMeld);
+                ++(hand.at(idx + 1).OneFromMeld);
+            }
+        }
+        else if(hand.at(idx).suit == hand.at(idx + 1).suit && hand.at(idx).value == hand.at(idx + 1).value - 2)//3,5 example
+        {
+            Card CheckCard(hand.at(idx).suit, Card::Value(hand.at(idx).value + 1));
+            if(!DiscardDeck.contains(CheckCard))
+            {
+                ++(hand.at(idx).OneFromMeld);
+                ++(hand.at(idx + 1).OneFromMeld);
+            }
+        }
+    }
+
+
+/*For Each Card in Hand
     If Card.isMeld
         Skip Card
-
-    //Check One Meld
-    If ((Card.Suite == Card.Next.Suite) &&
-         (Card.Value == Card.Next.Value - 1) || // 6,7, example
-
-        // Check Left
-        CheckCard.Suite = Card.Suite
-        CheckCard.Value = Card.Value - 1
-        If IsValidCard(CheckCard) And CheckCard Not InDiscardDeck
-        ++Card.OneFromMeld
-
-        // Check Right
-        CheckCard.Suite = Card.Suite
-        CheckCard.Value = Card.Value + 2
-        If IsValidCard(CheckCard) And CheckCard Not InDiscardDeck
-        ++Card.OneFromMeld
-
-    Else If (Card.Suite == Card.Next.Suite &&
-         Card.Value == Card.Next.Value - 2) // 6,8, example
-        // Check Middle
-        CheckCard.Suite = Card.Suite
-        CheckCard.Value = Card.Value + 1
-        If CheckCard Not In DiscardDeck
-        ++Card.OneFromMeld
 
 //Check Two Away From Meld
     Check1.Suite = Card.Suite
