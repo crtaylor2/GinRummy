@@ -16,6 +16,13 @@ public:
 
     void Play();
 
+    std::string SortByRuns();
+    std::string SortBySets();
+    std::string ShowComputerHand();
+    std::string HideComputerHand();
+    std::string Pass();//TODO
+    std::string Discard();
+
 private:
     Deck FaceDownDeck;
     Deck DiscardDeck;
@@ -27,8 +34,8 @@ private:
     unsigned int ComputerScore;
 
     bool PlayerTurn;
-    bool ShowComputerHand;
-    bool SortByRuns;
+    bool ShowingComputerHand;
+    bool SortingByRuns;
 
     static int LineLength;
 

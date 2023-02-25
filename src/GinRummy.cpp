@@ -12,8 +12,8 @@ GinRummy::GinRummy()
     ComputerScore = 0;
 
     PlayerTurn = true;
-    ShowComputerHand = false;
-    SortByRuns = true;
+    ShowingComputerHand = false;
+    SortingByRuns = true;
 
     DealNewRound();
 }
@@ -87,7 +87,7 @@ void GinRummy::DrawGame(const std::string& StatusMessage)
     for(Card& card : DiscardDeck)
         card.meld = Card::NOTMELD;
 
-    if(SortByRuns)
+    if(SortingByRuns)
     {
         PlayerHand.sortByRuns();
         ComputerHand.sortByRuns();
@@ -105,7 +105,7 @@ void GinRummy::DrawGame(const std::string& StatusMessage)
         std::string Middle;
         if(idx < ComputerHand.size())
         {
-            if(ShowComputerHand)
+            if(ShowingComputerHand)
                 Right = std::to_string(idx+1) + ". " + ComputerHand.at(idx).CardToString();
             else
                 Right = "Card " + std::to_string(idx+1);
@@ -152,29 +152,23 @@ std::string GinRummy::UserInput()
 
     if(Input == "R")
     {
-        StatusMessage = "Sorted hands by runs";
-        SortByRuns = true;
+        StatusMessage = SortByRuns();
     }
     else if(Input == "P")
     {
-        StatusMessage = "Sorted hands by sets";
-        SortByRuns = false;
+        StatusMessage = SortBySets();
     }
     else if(Input == "S")
     {
-        StatusMessage = "Showed computer hand";
-        ShowComputerHand = true;
+        StatusMessage = ShowComputerHand();
     }
     else if(Input == "H")
     {
-        StatusMessage = "Hid computer hand";
-        ShowComputerHand = false;
+        StatusMessage = HideComputerHand();
     }
     else if(Input == "A")
     {
-        StatusMessage = "Pass not implemented yet";
-
-        //TODO Implement pass
+        StatusMessage = Pass();
     }
     else if(Input == "Q")
     {
@@ -182,16 +176,7 @@ std::string GinRummy::UserInput()
     }
     else if(Input == "D")
     {
-        if(PlayerTurn && PlayerHand.size() < 11 && !DiscardDeck.empty())
-        {
-            PlayerHand.push_back(DiscardDeck.back());
-            DiscardDeck.pop_back();
-            StatusMessage = "Chose " + PlayerHand.back().CardToString() + " from discard pile";
-        }
-        else
-        {
-            StatusMessage = "Error - unable to choose from discard pile";
-        }
+        StatusMessage = Discard();
     }
     else if(Input == "F")
     {
@@ -738,5 +723,79 @@ void GinRummy::CalculateProbabilityOfMeld(Hand& hand)
             if(C.probOfMeld > 1.0)
                 C.probOfMeld = 0.99;
         }
+    }
+}
+
+//////////////////////////////////////////////////////////////////////
+/// Sets the flag to sort the hand by runs
+///
+/// Returns: std::string (status message)
+//////////////////////////////////////////////////////////////////////
+std::string GinRummy::SortByRuns()
+{
+    SortingByRuns = true;
+    return "Sorted hands by runs";
+}
+
+//////////////////////////////////////////////////////////////////////
+/// Sets the flag to sort the hand by sets
+///
+/// Returns: std::string (status message)
+//////////////////////////////////////////////////////////////////////
+std::string GinRummy::SortBySets()
+{
+    SortingByRuns = false;
+    return "Sorted hands by sets";
+}
+
+//////////////////////////////////////////////////////////////////////
+/// Sets the flag to display the compuer hand
+///
+/// Returns: std::string (status message)
+//////////////////////////////////////////////////////////////////////
+std::string GinRummy::ShowComputerHand()
+{
+    ShowingComputerHand = true;
+    return "Showed computer hand";
+}
+
+//////////////////////////////////////////////////////////////////////
+/// Sets the flag to hide the computer hand
+///
+/// Returns: std::string (status message)
+//////////////////////////////////////////////////////////////////////
+std::string GinRummy::HideComputerHand()
+{
+    ShowingComputerHand = false;
+    return "Hid computer hand";
+}
+
+//////////////////////////////////////////////////////////////////////
+/// Passes from picking up the discard
+///
+/// Returns: std::string (status message)
+//////////////////////////////////////////////////////////////////////
+std::string GinRummy::Pass()
+{
+    //TODO PASS
+    return "Pass not implemented yet";
+}
+
+//////////////////////////////////////////////////////////////////////
+/// Picks Up the Discard
+///
+/// Returns: std::string (status message)
+//////////////////////////////////////////////////////////////////////
+std::string GinRummy::Discard()
+{
+    if(PlayerTurn && PlayerHand.size() < 11 && !DiscardDeck.empty())
+    {
+        PlayerHand.push_back(DiscardDeck.back());
+        DiscardDeck.pop_back();
+        return "Chose " + PlayerHand.back().CardToString() + " from discard pile";
+    }
+    else
+    {
+        return "Error - unable to choose from discard pile";
     }
 }
