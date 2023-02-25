@@ -33,15 +33,8 @@ void GinRummy::DealNewRound()
     FaceDownDeck.createDeck();
     FaceDownDeck.shuffle();
 
-    //Deal each player 10 cards
-    for(int d = 0; d < 10; ++d)
-    {
-        PlayerHand.push_back(FaceDownDeck.back());
-        FaceDownDeck.pop_back();
-
-        ComputerHand.push_back(FaceDownDeck.back());
-        FaceDownDeck.pop_back();
-    }
+    FaceDownDeck.deal(PlayerHand, 10);
+    FaceDownDeck.deal(ComputerHand, 10);
 
     //Turn over top card card place in the Discard pile
     DiscardDeck.push_back(FaceDownDeck.back());
@@ -180,6 +173,7 @@ std::string GinRummy::UserInput()
     else if(Input == "A")
     {
         StatusMessage = "Pass not implemented yet";
+
         //TODO Implement pass
     }
     else if(Input == "Q")
