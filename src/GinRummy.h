@@ -23,6 +23,14 @@ public:
     std::string Pass();//TODO
     std::string Discard();
 
+    unsigned int getPlayerScore() const { return PlayerScore; }
+    unsigned int getComputerScore() const { return ComputerScore; }
+
+    Hand getPlayerHand() const { return PlayerHand; }
+    Hand getComputerHand() const { return ComputerHand; }
+
+    bool getShowingComputerHand() const { return ShowingComputerHand; }
+
 private:
     Deck FaceDownDeck;
     Deck DiscardDeck;
