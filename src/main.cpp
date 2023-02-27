@@ -1,4 +1,4 @@
-#include "GinRummy.h"
+#include "GinRummyConsole.h"
 #include "GinRummyRestServer.h"
 
 int main(int argc, char *argv[])
@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
     }
     else
     {
-        GinRummy gr;
+        GinRummyConsole gr;
         gr.Play();
     }
 

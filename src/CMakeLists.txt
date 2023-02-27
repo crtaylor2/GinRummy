@@ -1,5 +1,5 @@
-add_library(GinRummy GinRummy.cpp GinRummy.h GinRummyRestServer.cpp GinRummyRestServer.h)
-add_executable(GinRummyExe GinRummy.cpp GinRummy.h GinRummyRestServer.cpp GinRummyRestServer.h main.cpp)
+add_library(GinRummy GinRummy.cpp GinRummy.h GinRummyConsole.cpp GinRummyConsole.h GinRummyRestServer.cpp GinRummyRestServer.h)
+add_executable(GinRummyExe GinRummy.cpp GinRummy.h GinRummyConsole.cpp GinRummyConsole.h GinRummyRestServer.cpp GinRummyRestServer.h main.cpp)
 add_subdirectory(tests)
 
 find_package(cpprestsdk REQUIRED)

@@ -85,4 +85,4 @@ _deps/
 lib/tests/CardTest
 src/tests/GinRummyTest
 src/GinRummyExe
-
+.vscode/
