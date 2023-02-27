@@ -34,7 +34,7 @@ void GinRummyRestServer::handle_get(web::http::http_request message)
     }
     else if(paths[0] == "discard")
     {
-        ginRummy.Discard();
+        ginRummy.ChooseDiscard();
     }
     else if(paths[0] == "pass")
     {

@@ -176,143 +176,27 @@ std::string GinRummy::UserInput()
     }
     else if(Input == "D")
     {
-        StatusMessage = Discard();
+        StatusMessage = ChooseDiscard();
     }
     else if(Input == "F")
     {
-        if(PlayerTurn && PlayerHand.size() < 11 && !FaceDownDeck.empty())
-        {
-            PlayerHand.push_back(FaceDownDeck.back());
-            FaceDownDeck.pop_back();
-            StatusMessage = "Chose " + PlayerHand.back().CardToString() + " from face down pile";
-        }
-        else
-        {
-            StatusMessage = "Error - unable to choose from face down pile";
-        }
+        StatusMessage = ChooseFaceDown();
     }
     else if(!Input.empty() && Input.at(0) == 'D')
     {
-        if(PlayerTurn && PlayerHand.size() > 10)
-        {
-            int idx = std::stoi(Input.substr(1)) - 1;
-            if(idx >= 0 && idx < PlayerHand.size())
-            {
-                DiscardDeck.push_back(PlayerHand.at(idx));
-                PlayerHand.at(idx) = PlayerHand.back();
-                PlayerHand.pop_back();
-                StatusMessage = "You discarded " + DiscardDeck.back().CardToString();
-                PlayerTurn = false;
-            }
-            else
-            {
-                StatusMessage = "Error - unable to discard " + idx;
-            }
-        }
-        else
-        {
-            StatusMessage = "Error - unable to discard";
-        }
+        StatusMessage = Discard(Input);
     }
     else if(Input == "C")
     {
-        if(!PlayerTurn)
-        {
-            if(PickupDiscard(ComputerHand))
-            {
-                ComputerHand.push_back(DiscardDeck.back());
-                DiscardDeck.pop_back();
-                StatusMessage = "Computer chose " + ComputerHand.back().CardToString() + " from discards";
-            }
-            else
-            {
-                ComputerHand.push_back(FaceDownDeck.back());
-                FaceDownDeck.pop_back();
-                StatusMessage = "Computer chose from the deck";
-            }
-
-            FindUnmatchedMeld(ComputerHand);
-
-            int idx = IndexToDiscard(ComputerHand);
-            DiscardDeck.push_back(ComputerHand.at(idx));
-            StatusMessage += " and discarded " + DiscardDeck.back().CardToString();
-            ComputerHand.erase(ComputerHand.begin() + idx);
-
-            FindUnmatchedMeld(ComputerHand);
-
-            if(ComputerHand.size() < 11 && SumUnmatchedMeld(ComputerHand) == 0)
-            {
-                int handUnmatched = FindUnmatchedMeldWithPartner(PlayerHand, ComputerHand);
-                ComputerScore += handUnmatched + 20;
-                DealNewRound();
-                StatusMessage += " Computer ginned and gained " + std::to_string(handUnmatched + 20) + " points. Try again.";
-            }
-            else if(Knock(ComputerHand))
-            {
-                int ComputerHandUnmatched = SumUnmatchedMeld(ComputerHand);
-                int handUnmatched = FindUnmatchedMeldWithPartner(PlayerHand, ComputerHand);
-
-                if(ComputerHandUnmatched < handUnmatched)
-                {
-                    ComputerScore += handUnmatched - ComputerHandUnmatched;
-                    StatusMessage += " Computer knocked and gained " + std::to_string(handUnmatched - ComputerHandUnmatched) + " points.";
-                }
-                else
-                {
-                    PlayerScore += ComputerHandUnmatched - handUnmatched + 10;
-                    StatusMessage += " Computer knocked and lost. You gained " + std::to_string(ComputerHandUnmatched - handUnmatched + 10) + " points.";
-                }
-                DealNewRound();
-            }
-            PlayerTurn = true;
-        }
-        else
-        {
-            StatusMessage = "Error - Player Turn";
-        }
+        StatusMessage = ComputersTurn();
     }
     else if(Input == "K")
     {
-        if(PlayerHand.size() < 11 && SumUnmatchedMeld(PlayerHand) < 11)
-        {
-            int handUnmatched = SumUnmatchedMeld(PlayerHand);
-            int ComputerHandUnmatched = FindUnmatchedMeldWithPartner(ComputerHand, PlayerHand);
-
-            if(handUnmatched < ComputerHandUnmatched)
-            {
-                PlayerScore += ComputerHandUnmatched - handUnmatched;
-                StatusMessage = "CONGRATULATIONS! You knocked with " + std::to_string(handUnmatched) +
-                        " points. The computer had " + std::to_string(ComputerHandUnmatched) + " points.";
-            }
-            else
-            {
-                ComputerScore += handUnmatched - ComputerHandUnmatched + 10;
-                StatusMessage = "GOOD TRY! You knocked with " + std::to_string(handUnmatched) +
-                        " points. The computer had " + std::to_string(ComputerHandUnmatched) + " points.";
-            }
-
-            DealNewRound();
-        }
-        else
-        {
-            StatusMessage = "Error - you are unable to knock";
-        }
+        StatusMessage = Knock();
     }
     else if(Input == "G")
     {
-        if(PlayerHand.size() < 11 && SumUnmatchedMeld(PlayerHand) == 0)
-        {
-            int ComputerHandUnmatched = FindUnmatchedMeldWithPartner(ComputerHand, PlayerHand);
-            PlayerScore += ComputerHandUnmatched + 20;
-
-            DealNewRound();
-
-            StatusMessage = "CONGRATULATIONS! You ginned. The computer had " + std::to_string(ComputerHandUnmatched) + " points.";
-        }
-        else
-        {
-            StatusMessage = "Unable to gin, your unmatched meld is " + std::to_string(SumUnmatchedMeld(PlayerHand));
-        }
+        StatusMessage = Gin();
     }
     else
     {
@@ -786,7 +670,7 @@ std::string GinRummy::Pass()
 ///
 /// Returns: std::string (status message)
 //////////////////////////////////////////////////////////////////////
-std::string GinRummy::Discard()
+std::string GinRummy::ChooseDiscard()
 {
     if(PlayerTurn && PlayerHand.size() < 11 && !DiscardDeck.empty())
     {
@@ -797,5 +681,176 @@ std::string GinRummy::Discard()
     else
     {
         return "Error - unable to choose from discard pile";
+    }
+}
+
+//////////////////////////////////////////////////////////////////////
+/// Picks Up a card from the face down pile
+///
+/// Returns: std::string (status message)
+//////////////////////////////////////////////////////////////////////
+std::string GinRummy::ChooseFaceDown()
+{
+    if(PlayerTurn && PlayerHand.size() < 11 && !FaceDownDeck.empty())
+    {
+        PlayerHand.push_back(FaceDownDeck.back());
+        FaceDownDeck.pop_back();
+        return  "Chose " + PlayerHand.back().CardToString() + " from face down pile";
+    }
+    else
+    {
+        return "Error - unable to choose from face down pile";
+    }
+
+}
+
+//////////////////////////////////////////////////////////////////////
+/// Discards
+///
+/// Returns: std::string (status message)
+//////////////////////////////////////////////////////////////////////
+std::string GinRummy::Discard(const std::string& Input)
+{
+    if(PlayerTurn && PlayerHand.size() > 10)
+        {
+            int idx = std::stoi(Input.substr(1)) - 1;
+            if(idx >= 0 && idx < PlayerHand.size())
+            {
+                DiscardDeck.push_back(PlayerHand.at(idx));
+                PlayerHand.at(idx) = PlayerHand.back();
+                PlayerHand.pop_back();
+                PlayerTurn = false;
+                return "You discarded " + DiscardDeck.back().CardToString();
+            }
+            else
+            {
+                return "Error - unable to discard " + idx;
+            }
+        }
+        else
+        {
+            return "Error - unable to discard";
+        }
+}
+
+//////////////////////////////////////////////////////////////////////
+/// Computer's Turn
+///
+/// Returns: std::string (status message)
+//////////////////////////////////////////////////////////////////////
+std::string GinRummy::ComputersTurn()
+{
+    std::string StatusMessage;
+    
+    if(!PlayerTurn)
+    {
+        if(PickupDiscard(ComputerHand))
+        {
+            ComputerHand.push_back(DiscardDeck.back());
+            DiscardDeck.pop_back();
+            StatusMessage = "Computer chose " + ComputerHand.back().CardToString() + " from discards";
+        }
+        else
+        {
+            ComputerHand.push_back(FaceDownDeck.back());
+            FaceDownDeck.pop_back();
+            StatusMessage = "Computer chose from the deck";
+        }
+
+        FindUnmatchedMeld(ComputerHand);
+
+        int idx = IndexToDiscard(ComputerHand);
+        DiscardDeck.push_back(ComputerHand.at(idx));
+        StatusMessage += " and discarded " + DiscardDeck.back().CardToString();
+        ComputerHand.erase(ComputerHand.begin() + idx);
+
+        FindUnmatchedMeld(ComputerHand);
+
+        if(ComputerHand.size() < 11 && SumUnmatchedMeld(ComputerHand) == 0)
+        {
+            int handUnmatched = FindUnmatchedMeldWithPartner(PlayerHand, ComputerHand);
+            ComputerScore += handUnmatched + 20;
+            DealNewRound();
+            StatusMessage += " Computer ginned and gained " + std::to_string(handUnmatched + 20) + " points. Try again.";
+        }
+        else if(Knock(ComputerHand))
+        {
+            int ComputerHandUnmatched = SumUnmatchedMeld(ComputerHand);
+            int handUnmatched = FindUnmatchedMeldWithPartner(PlayerHand, ComputerHand);
+
+            if(ComputerHandUnmatched < handUnmatched)
+            {
+                ComputerScore += handUnmatched - ComputerHandUnmatched;
+                StatusMessage += " Computer knocked and gained " + std::to_string(handUnmatched - ComputerHandUnmatched) + " points.";
+            }
+            else
+            {
+                PlayerScore += ComputerHandUnmatched - handUnmatched + 10;
+                StatusMessage += " Computer knocked and lost. You gained " + std::to_string(ComputerHandUnmatched - handUnmatched + 10) + " points.";
+            }
+            DealNewRound();
+        }
+        PlayerTurn = true;
+    }
+    else
+    {
+        StatusMessage = "Error - Player Turn";
+    }
+
+    return StatusMessage;
+}
+
+//////////////////////////////////////////////////////////////////////
+/// Knocks
+///
+/// Returns: std::string (status message)
+//////////////////////////////////////////////////////////////////////
+std::string GinRummy::Knock()
+{
+    if(PlayerHand.size() < 11 && SumUnmatchedMeld(PlayerHand) < 11)
+    {
+        int handUnmatched = SumUnmatchedMeld(PlayerHand);
+        int ComputerHandUnmatched = FindUnmatchedMeldWithPartner(ComputerHand, PlayerHand);
+        
+        DealNewRound();
+
+        if(handUnmatched < ComputerHandUnmatched)
+        {
+            PlayerScore += ComputerHandUnmatched - handUnmatched;
+            return "CONGRATULATIONS! You knocked with " + std::to_string(handUnmatched) +
+                    " points. The computer had " + std::to_string(ComputerHandUnmatched) + " points.";
+        }
+        else
+        {
+            ComputerScore += handUnmatched - ComputerHandUnmatched + 10;
+            return "GOOD TRY! You knocked with " + std::to_string(handUnmatched) +
+                    " points. The computer had " + std::to_string(ComputerHandUnmatched) + " points.";
+        }
+    }
+    else
+    {
+        return "Error - you are unable to knock";
+    }
+}
+
+//////////////////////////////////////////////////////////////////////
+/// Gin
+///
+/// Returns: std::string (status message)
+//////////////////////////////////////////////////////////////////////
+std::string GinRummy::Gin()
+{
+    if(PlayerHand.size() < 11 && SumUnmatchedMeld(PlayerHand) == 0)
+    {
+        int ComputerHandUnmatched = FindUnmatchedMeldWithPartner(ComputerHand, PlayerHand);
+        PlayerScore += ComputerHandUnmatched + 20;
+
+        DealNewRound();
+
+        return "CONGRATULATIONS! You ginned. The computer had " + std::to_string(ComputerHandUnmatched) + " points.";
+    }
+    else
+    {
+        return "Unable to gin, your unmatched meld is " + std::to_string(SumUnmatchedMeld(PlayerHand));
     }
 }

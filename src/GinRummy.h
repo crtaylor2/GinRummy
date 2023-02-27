@@ -21,7 +21,12 @@ public:
     std::string ShowComputerHand();
     std::string HideComputerHand();
     std::string Pass();//TODO
-    std::string Discard();
+    std::string ChooseDiscard();
+    std::string ChooseFaceDown();
+    std::string Discard(const std::string& Input);
+    std::string ComputersTurn();
+    std::string Knock();
+    std::string Gin();
 
     unsigned int getPlayerScore() const { return PlayerScore; }
     unsigned int getComputerScore() const { return ComputerScore; }
