@@ -364,7 +364,6 @@ bool GinRummy::PickupDiscard(const Hand& hand)
     int idx = IndexToDiscard(TempHand);
     if(TempHand.at(idx) == DiscardDeck.back())
     {
-        // TODO: Why is this necessary?
         return false;
     }
     TempHand.erase(TempHand.begin() + idx);
@@ -385,9 +384,6 @@ bool GinRummy::PickupDiscard(const Hand& hand)
 //////////////////////////////////////////////////////////////////////
 int GinRummy::IndexToDiscard(const Hand& hand) const
 {
-    // TODO This apporach can lead to a discarding of cards that will break
-    // meld in a situation where all 11 cards are melded (i.e. gin with 11)
-
     // Discard the card with the lowest probability of meld
     double MinProbability = hand.at(0).probOfMeld;
     std::vector<int> MinProbIdxs = { 0 };
@@ -671,7 +667,7 @@ std::string GinRummy::Pass()
 }
 
 //////////////////////////////////////////////////////////////////////
-/// Picks Up the Discard
+/// Picks up a card from the discard pile for the player
 ///
 /// Returns: std::string (status message)
 //////////////////////////////////////////////////////////////////////
@@ -692,7 +688,7 @@ std::string GinRummy::ChooseDiscard()
 }
 
 //////////////////////////////////////////////////////////////////////
-/// Picks Up a card from the face down pile
+/// Picks up a card from the face down pile for the player
 ///
 /// Returns: std::string (status message)
 //////////////////////////////////////////////////////////////////////
@@ -717,7 +713,7 @@ std::string GinRummy::ChooseFaceDown()
 }
 
 //////////////////////////////////////////////////////////////////////
-/// Discards
+/// Discards the card at indedx idx from the player's hand
 ///
 /// Returns: std::string (status message)
 //////////////////////////////////////////////////////////////////////
@@ -817,7 +813,7 @@ std::string GinRummy::ComputersTurn()
 }
 
 //////////////////////////////////////////////////////////////////////
-/// Knocks
+/// Knocks for the player
 ///
 /// Returns: std::string (status message)
 //////////////////////////////////////////////////////////////////////
@@ -850,7 +846,7 @@ std::string GinRummy::Knock()
 }
 
 //////////////////////////////////////////////////////////////////////
-/// Gin
+/// Gin for the player
 ///
 /// Returns: std::string (status message)
 //////////////////////////////////////////////////////////////////////

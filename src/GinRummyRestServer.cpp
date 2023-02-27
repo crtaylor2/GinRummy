@@ -7,6 +7,11 @@ GinRummyRestServer::GinRummyRestServer(std::string url) : m_listener(url), ginRu
     m_listener.support(web::http::methods::GET, std::bind(&GinRummyRestServer::handle_get, this, std::placeholders::_1));
 }
 
+//////////////////////////////////////////////////////////////////////
+/// Handles HTTP GET requests
+///
+/// Returns: void
+//////////////////////////////////////////////////////////////////////
 void GinRummyRestServer::handle_get(web::http::http_request message)
 {
     std::string response;
@@ -72,6 +77,11 @@ void GinRummyRestServer::handle_get(web::http::http_request message)
     return;
 }
 
+//////////////////////////////////////////////////////////////////////
+/// Creates a JSON response for the Gin Rummy state
+///
+/// Returns: std::string (state, in JSON)
+//////////////////////////////////////////////////////////////////////
 std::string GinRummyRestServer::createJsonResponse(const std::string& response) const
 {
     Json::Value json;
