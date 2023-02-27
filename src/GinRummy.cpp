@@ -497,8 +497,9 @@ std::string GinRummy::ChooseDiscard()
         DiscardDeck.pop_back();
         CanPass = false;
         JustPassed = false;
+        std::string StatusMessage = "Chose " + PlayerHand.back().CardToString() + " from discard pile";
         Housekeeping();
-        return "Chose " + PlayerHand.back().CardToString() + " from discard pile";
+        return StatusMessage;
     }
     else
     {
