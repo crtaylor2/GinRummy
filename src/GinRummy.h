@@ -20,10 +20,10 @@ public:
     std::string SortBySets();
     std::string ShowComputerHand();
     std::string HideComputerHand();
-    std::string Pass();//TODO
+    std::string Pass();
     std::string ChooseDiscard();
     std::string ChooseFaceDown();
-    std::string Discard(const std::string& Input);
+    std::string Discard(int idx);
     std::string ComputersTurn();
     std::string Knock();
     std::string Gin();
@@ -33,8 +33,10 @@ public:
 
     Hand getPlayerHand() const { return PlayerHand; }
     Hand getComputerHand() const { return ComputerHand; }
+    Card getDiscardBack() const { return DiscardDeck.back(); }
 
     bool getShowingComputerHand() const { return ShowingComputerHand; }
+    bool getPlayerTurn() const { return PlayerTurn; }
 
 private:
     Deck FaceDownDeck;
@@ -49,6 +51,8 @@ private:
     bool PlayerTurn;
     bool ShowingComputerHand;
     bool SortingByRuns;
+    bool CanPass;
+    bool JustPassed;
 
     static int LineLength;
 

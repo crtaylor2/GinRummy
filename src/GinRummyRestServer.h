@@ -18,9 +18,8 @@ class GinRummyRestServer
 
     private:
         void handle_get(web::http::http_request message);
-        //void handle_post(web::http::http_request message);
 
-        std::string createJsonResponse() const;
+        std::string createJsonResponse(const std::string& response) const;
 
         GinRummy ginRummy;
         web::http::experimental::listener::http_listener m_listener;

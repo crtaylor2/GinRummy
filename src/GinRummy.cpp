@@ -30,6 +30,9 @@ void GinRummy::DealNewRound()
     ComputerHand.clear();
     DiscardDeck.clear();
 
+    CanPass = true;
+    JustPassed = false;
+
     FaceDownDeck.createDeck();
     FaceDownDeck.shuffle();
 
@@ -184,7 +187,8 @@ std::string GinRummy::UserInput()
     }
     else if(!Input.empty() && Input.at(0) == 'D')
     {
-        StatusMessage = Discard(Input);
+        int idx = std::stoi(Input.substr(1)) - 1;
+        StatusMessage = Discard(idx);
     }
     else if(Input == "C")
     {
@@ -661,8 +665,9 @@ std::string GinRummy::HideComputerHand()
 //////////////////////////////////////////////////////////////////////
 std::string GinRummy::Pass()
 {
-    //TODO PASS
-    return "Pass not implemented yet";
+    PlayerTurn = !PlayerTurn;
+    JustPassed = true;
+    return "You passed";
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -676,6 +681,8 @@ std::string GinRummy::ChooseDiscard()
     {
         PlayerHand.push_back(DiscardDeck.back());
         DiscardDeck.pop_back();
+        CanPass = false;
+        JustPassed = false;
         return "Chose " + PlayerHand.back().CardToString() + " from discard pile";
     }
     else
@@ -691,17 +698,22 @@ std::string GinRummy::ChooseDiscard()
 //////////////////////////////////////////////////////////////////////
 std::string GinRummy::ChooseFaceDown()
 {
-    if(PlayerTurn && PlayerHand.size() < 11 && !FaceDownDeck.empty())
+    if(JustPassed)
+    {
+        return "Error - computer passed, you can't pickup the face down card";
+    }
+    else if(PlayerTurn && PlayerHand.size() < 11 && !FaceDownDeck.empty())
     {
         PlayerHand.push_back(FaceDownDeck.back());
         FaceDownDeck.pop_back();
+        CanPass = false;
+        JustPassed = false;
         return  "Chose " + PlayerHand.back().CardToString() + " from face down pile";
     }
     else
     {
         return "Error - unable to choose from face down pile";
     }
-
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -709,28 +721,21 @@ std::string GinRummy::ChooseFaceDown()
 ///
 /// Returns: std::string (status message)
 //////////////////////////////////////////////////////////////////////
-std::string GinRummy::Discard(const std::string& Input)
+std::string GinRummy::Discard(int idx)
 {
     if(PlayerTurn && PlayerHand.size() > 10)
+    {
+        if(idx >= 0 && idx < PlayerHand.size())
         {
-            int idx = std::stoi(Input.substr(1)) - 1;
-            if(idx >= 0 && idx < PlayerHand.size())
-            {
-                DiscardDeck.push_back(PlayerHand.at(idx));
-                PlayerHand.at(idx) = PlayerHand.back();
-                PlayerHand.pop_back();
-                PlayerTurn = false;
-                return "You discarded " + DiscardDeck.back().CardToString();
-            }
-            else
-            {
-                return "Error - unable to discard " + idx;
-            }
+            DiscardDeck.push_back(PlayerHand.at(idx));
+            PlayerHand.at(idx) = PlayerHand.back();
+            PlayerHand.pop_back();
+            PlayerTurn = false;
+            return "You discarded " + DiscardDeck.back().CardToString();
         }
-        else
-        {
-            return "Error - unable to discard";
-        }
+    }
+
+    return "Error - unable to discard " + std::to_string(idx);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -749,6 +754,17 @@ std::string GinRummy::ComputersTurn()
             ComputerHand.push_back(DiscardDeck.back());
             DiscardDeck.pop_back();
             StatusMessage = "Computer chose " + ComputerHand.back().CardToString() + " from discards";
+        }
+        else if(JustPassed)
+        {
+            JustPassed = false;
+            return "Computer Passed";
+        }
+        else if(CanPass)
+        {
+            CanPass = false;
+            JustPassed = true;
+            return "Computer Passed";
         }
         else
         {
