@@ -98,15 +98,27 @@ std::string GinRummyRestServer::createJsonResponse(const std::string& response) 
         c["suit"] = card.SuitString();
         c["value"] = card.ValueString();
         c["string"] = card.CardToString();
+        c["meld"] = card.isMeld();
         playerHand.append(c);
     }
 
     for(Card& card : ginRummy.getPlayerHand())
     {
         Json::Value c;
-        c["suit"] = ginRummy.getShowingComputerHand() ? card.SuitString() : "";
-        c["value"] = ginRummy.getShowingComputerHand() ? card.ValueString() : "";
-        c["string"] = ginRummy.getShowingComputerHand() ? card.CardToString() : "";
+        if(ginRummy.getShowingComputerHand())
+        {
+            c["suit"] = card.SuitString();
+            c["value"] = card.ValueString();
+            c["string"] = card.CardToString();
+            c["meld"] = card.isMeld();
+        }
+        else
+        {
+            c["suit"] = "";
+            c["value"] = "";
+            c["string"] = "";
+            c["meld"] = "";
+        }
         computerHand.append(c);
     }
 
